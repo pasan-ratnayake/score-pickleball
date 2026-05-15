@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F0F5FF" id="meta-theme-color">
+  <title>Pickleball Scorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & Tokens ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Light theme (Xyicon-inspired) ─────────────── */
+    :root {
+      --clr-bg:           #F0F5FF;
+      --clr-surface:      #FFFFFF;
+      --clr-surface-2:    #E4EDFC;
+      --clr-primary:      #1B72EF;
+      --clr-primary-dk:   #1560CC;
+      --clr-team-a:       #F56A22;
+      --clr-team-a-dk:    #D4511A;
+      --clr-team-b:       #00B0A2;
+      --clr-team-b-dk:    #009688;
+      --clr-text:         #1A2744;
+      --clr-muted:        #6B7FA3;
+      --clr-border:       #C8D8F0;
+      --clr-on-primary:   #FFFFFF;
+      --clr-on-team:      #FFFFFF;
+      --win-overlay-bg:   rgba(26,39,68,.88);
+      --shadow:           0 2px 16px rgba(27,114,239,.10);
+      --shadow-primary:   0 4px 16px rgba(27,114,239,.30);
+      --score-size:       clamp(4.5rem, 17vw, 7.5rem);
+      --btn-h:            clamp(60px, 14vw, 88px);
+      --r-md:             14px;
+      --r-lg:             22px;
+      --r-pill:           999px;
+      --trans:            160ms ease;
+    }
+
+    /* ── Dark theme ─────────────────────────────────── */
+    [data-theme="dark"] {
+      --clr-bg:           #0D1829;
+      --clr-surface:      #162236;
+      --clr-surface-2:    #1E2F47;
+      --clr-primary:      #4D9BFF;
+      --clr-primary-dk:   #1B72EF;
+      --clr-team-a:       #FF7A3D;
+      --clr-team-a-dk:    #E55A1A;
+      --clr-team-b:       #00C9B8;
+      --clr-team-b-dk:    #00A89A;
+      --clr-text:         #E8F0FF;
+      --clr-muted:        #7A9AB8;
+      --clr-border:       #243352;
+      --clr-on-primary:   #0D1829;
+      --clr-on-team:      #0D1829;
+      --win-overlay-bg:   rgba(13,24,41,.93);
+      --shadow:           0 4px 24px rgba(0,0,0,.45);
+      --shadow-primary:   0 4px 16px rgba(77,155,255,.30);
+    }
+
+    /* ── Base ───────────────────────────────────────── */
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Nunito', system-ui, sans-serif;
+      background: var(--clr-bg);
+      color: var(--clr-text);
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+
+    .hidden { display: none !important; }
+
+    /* ── App shell ──────────────────────────────────── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    /* ── Tab bar ────────────────────────────────────── */
+    #tab-bar {
+      display: flex;
+      background: var(--clr-surface);
+      border-bottom: 2px solid var(--clr-border);
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 14px 0;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--clr-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      transition: color var(--trans);
+      touch-action: manipulation;
+      position: relative;
+    }
+
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 20%; right: 20%;
+      height: 3px;
+      background: var(--clr-primary);
+      border-radius: 3px 3px 0 0;
+      opacity: 0;
+      transition: opacity var(--trans);
+    }
+
+    .tab-btn.active { color: var(--clr-primary); }
+    .tab-btn.active::after { opacity: 1; }
+
+    #theme-toggle {
+      padding: 0 14px;
+      font-size: 1.1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      touch-action: manipulation;
+      flex-shrink: 0;
+      transition: transform var(--trans);
+    }
+    #theme-toggle:active { transform: scale(.85); }
+
+    /* ── Tab panels ─────────────────────────────────── */
+    .tab-panel { flex: 1; overflow-y: auto; }
+
+    /* ══════════════════════════════════════════════════
+       SETUP SCREEN
+    ══════════════════════════════════════════════════ */
+    #screen-setup {
+      padding: 32px 20px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .app-title {
+      font-size: clamp(2rem, 8vw, 2.8rem);
+      font-weight: 900;
+      letter-spacing: -.02em;
+      color: var(--clr-text);
+    }
+
+    .title-accent { color: var(--clr-primary); }
+
+    .setup-card {
+      width: 100%;
+      background: var(--clr-surface);
+      border-radius: var(--r-lg);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .field-label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--clr-muted);
+      margin-bottom: 8px;
+    }
+
+    /* Toggle groups */
+    .toggle-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .toggle-btn {
+      flex: 1;
+      padding: 12px 8px;
+      font-family: inherit;
+      font-size: .95rem;
+      font-weight: 700;
+      background: var(--clr-surface-2);
+      color: var(--clr-muted);
+      border: 2px solid var(--clr-border);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: all var(--trans);
+      touch-action: manipulation;
+    }
+
+    .toggle-btn.active {
+      background: var(--clr-primary);
+      color: var(--clr-on-primary);
+      border-color: var(--clr-primary);
+    }
+
+    /* Name inputs */
+    .name-row { display: flex; flex-direction: column; gap: 6px; }
+    .name-row + .name-row { margin-top: 10px; }
+
+    .name-label {
+      font-size: .8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .name-label.team-a-label { color: var(--clr-team-a); }
+    .name-label.team-b-label { color: var(--clr-team-b); }
+
+    .name-input {
+      width: 100%;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      background: var(--clr-surface-2);
+      color: var(--clr-text);
+      border: 2px solid var(--clr-border);
+      border-radius: var(--r-md);
+      outline: none;
+      transition: border-color var(--trans);
+    }
+
+    .name-input:focus { border-color: var(--clr-primary); }
+    .name-input::placeholder { color: var(--clr-muted); font-weight: 400; }
+
+    /* Primary button */
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      font-family: inherit;
+      font-size: 1.1rem;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      background: var(--clr-primary);
+      color: var(--clr-on-primary);
+      border: none;
+      border-radius: var(--r-pill);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform var(--trans), background var(--trans);
+      box-shadow: var(--shadow-primary);
+    }
+
+    .btn-primary:active { transform: scale(.97); background: var(--clr-primary-dk); }
+
+    /* ══════════════════════════════════════════════════
+       GAME SCREEN
+    ══════════════════════════════════════════════════ */
+    #screen-game {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding-bottom: 24px;
+    }
+
+    /* Score header */
+    #score-header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 24px 16px 16px;
+      background: var(--clr-surface);
+      border-bottom: 2px solid var(--clr-border);
+    }
+
+    .team-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 8px;
+      border-radius: var(--r-md);
+      transition: box-shadow var(--trans);
+    }
+
+    .team-block.serving-glow-a { box-shadow: 0 0 0 3px var(--clr-team-a), 0 0 20px rgba(255,107,107,.25); }
+    .team-block.serving-glow-b { box-shadow: 0 0 0 3px var(--clr-team-b), 0 0 20px rgba(78,205,196,.25); }
+
+    .team-name {
+      font-size: .8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--clr-muted);
+      text-align: center;
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+      border-bottom: 1px dashed var(--clr-border);
+      padding-bottom: 1px;
+      transition: color var(--trans), border-color var(--trans);
+    }
+
+    .team-name:hover { color: var(--clr-text); border-color: var(--clr-muted); }
+
+    .team-name-input {
+      font-family: inherit;
+      font-size: .8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      text-align: center;
+      width: 90px;
+      background: var(--clr-surface-2);
+      color: var(--clr-text);
+      border: 1px solid var(--clr-primary);
+      border-radius: 6px;
+      padding: 2px 6px;
+      outline: none;
+    }
+
+    .score-num {
+      font-size: var(--score-size);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -.03em;
+    }
+
+    .team-a-block .score-num { color: var(--clr-team-a); }
+    .team-b-block .score-num { color: var(--clr-team-b); }
+
+    .score-divider {
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      font-weight: 900;
+      color: var(--clr-border);
+      line-height: 1;
+    }
+
+    /* Serve bar */
+    #serve-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--clr-surface-2);
+      font-size: .9rem;
+      font-weight: 700;
+      color: var(--clr-primary);
+      border-bottom: 1px solid var(--clr-border);
+    }
+
+    #serve-icon { font-size: 1.1rem; }
+
+    #singles-side-bar {
+      text-align: center;
+      padding: 6px 16px;
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--clr-muted);
+      background: var(--clr-surface);
+      border-bottom: 1px solid var(--clr-border);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    #singles-side-bar strong { color: var(--clr-primary); }
+
+    /* Point buttons */
+    #point-buttons {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .btn-point {
+      flex: 1;
+      min-height: var(--btn-h);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-family: inherit;
+      border: none;
+      border-radius: var(--r-lg);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform var(--trans), filter var(--trans);
+      box-shadow: var(--shadow);
+      padding: 14px 8px;
+    }
+
+    .btn-point:active { transform: scale(.96); filter: brightness(.9); }
+
+    .btn-point-a { background: var(--clr-team-a); }
+    .btn-point-b { background: var(--clr-team-b); }
+
+    .btn-point-name {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: rgba(255,255,255,.7);
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .btn-point-label {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--clr-on-team);
+      letter-spacing: .02em;
+    }
+
+    /* Game action buttons */
+    #game-actions {
+      display: flex;
+      gap: 10px;
+      padding: 0 16px;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      padding: 12px 8px;
+      font-family: inherit;
+      font-size: .9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      background: var(--clr-surface);
+      color: var(--clr-muted);
+      border: 2px solid var(--clr-border);
+      border-radius: var(--r-pill);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all var(--trans);
+    }
+
+    .btn-secondary:hover:not(:disabled) { color: var(--clr-text); border-color: var(--clr-muted); }
+    .btn-secondary:active:not(:disabled) { transform: scale(.97); }
+    .btn-secondary:disabled { opacity: .35; cursor: not-allowed; }
+
+    /* Score log */
+    #score-log-container {
+      margin: 16px 16px 0;
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--r-md);
+      overflow: hidden;
+    }
+
+    #log-summary {
+      padding: 12px 16px;
+      font-size: .85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--clr-muted);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+
+    #log-summary::before {
+      content: '▶';
+      font-size: .65rem;
+      transition: transform var(--trans);
+    }
+
+    #score-log-container[open] #log-summary::before { transform: rotate(90deg); }
+
+    #log-count { color: var(--clr-primary); }
+
+    #score-log {
+      list-style: none;
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 0 0 8px;
+    }
+
+    #score-log li {
+      padding: 8px 16px;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--clr-muted);
+      border-top: 1px solid var(--clr-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #score-log li .log-rally { color: var(--clr-text); }
+    #score-log li .log-score { color: var(--clr-primary); font-size: .8rem; }
+    #score-log li .log-serve { font-size: .75rem; color: var(--clr-muted); }
+
+    .log-team-a { color: var(--clr-team-a) !important; }
+    .log-team-b { color: var(--clr-team-b) !important; }
+
+    /* ══════════════════════════════════════════════════
+       WIN OVERLAY
+    ══════════════════════════════════════════════════ */
+    #win-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: var(--win-overlay-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      animation: fadeIn .3s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    #win-card {
+      background: var(--clr-surface);
+      border-radius: var(--r-lg);
+      padding: 40px 28px;
+      text-align: center;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 8px 48px rgba(0,0,0,.6);
+      animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(.7); opacity: 0; }
+      to   { transform: scale(1);  opacity: 1; }
+    }
+
+    #win-emoji { font-size: 4rem; line-height: 1; }
+
+    #win-team-name {
+      font-size: clamp(1.6rem, 7vw, 2.2rem);
+      font-weight: 900;
+      letter-spacing: -.02em;
+    }
+
+    #win-message {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--clr-muted);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+
+    #win-score-display {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--clr-primary);
+      margin: 4px 0 8px;
+    }
+
+    #win-card .btn-primary { margin-top: 8px; }
+    #win-card .btn-secondary { width: 100%; margin-top: 4px; }
+
+    /* ══════════════════════════════════════════════════
+       RULES TAB
+    ══════════════════════════════════════════════════ */
+    .rules-content {
+      padding: 24px 20px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .rules-title {
+      font-size: clamp(1.4rem, 6vw, 1.9rem);
+      font-weight: 900;
+      color: var(--clr-primary);
+      letter-spacing: -.02em;
+      margin-bottom: 4px;
+    }
+
+    .rules-section {
+      background: var(--clr-surface);
+      border-radius: var(--r-md);
+      padding: 18px 18px;
+      border: 1px solid var(--clr-border);
+    }
+
+    .rule-heading {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: var(--clr-text);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rule-icon { font-size: 1.2rem; }
+
+    .rules-section p {
+      font-size: .9rem;
+      line-height: 1.65;
+      color: var(--clr-muted);
+    }
+
+    .rules-section p + p { margin-top: 8px; }
+
+    .rules-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .rules-list li {
+      font-size: .9rem;
+      color: var(--clr-muted);
+      line-height: 1.5;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .rules-list li::before {
+      content: '•';
+      position: absolute;
+      left: 4px;
+      color: var(--clr-primary);
+      font-weight: 900;
+    }
+
+    /* Highlight text within rules */
+    .hl-a { color: var(--clr-team-a); font-weight: 700; }
+    .hl-b { color: var(--clr-team-b); font-weight: 700; }
+    .hl   { color: var(--clr-primary); font-weight: 700; }
+
+    /* ══════════════════════════════════════════════════
+       COURT SCOREBOARD (game screen)
+    ══════════════════════════════════════════════════ */
+    #court-scoreboard {
+      position: relative;
+      width: calc(100% - 32px);
+      max-width: 340px;
+      aspect-ratio: 5 / 7;
+      margin: 20px auto 12px;
+      background: #1a4a1a;
+      border: 3px solid var(--clr-text);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    [data-theme="dark"] #court-scoreboard {
+      background: #143614;
+    }
+
+    .court-half {
+      position: relative;
+      flex: 1;
+      cursor: pointer;
+      transition: filter var(--trans), box-shadow var(--trans);
+    }
+
+    .court-half:active { filter: brightness(1.18); }
+
+    .court-half-a.serving { box-shadow: inset 0 0 0 3px var(--clr-team-a); }
+    .court-half-b.serving { box-shadow: inset 0 0 0 3px var(--clr-team-b); }
+
+    /* Score + team name centered near the net */
+    .court-info {
+      position: absolute;
+      z-index: 4;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      pointer-events: none;
+    }
+
+    .court-info-a { bottom: 30%; }   /* just above the kitchen */
+    .court-info-b { top: 30%; }
+
+    .court-name {
+      font-size: .82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+      pointer-events: auto;
+      padding: 1px 6px 2px;
+      border-bottom: 1px dashed rgba(255,255,255,.22);
+      text-shadow: 0 1px 4px rgba(0,0,0,.55);
+    }
+
+    .court-score {
+      font-size: clamp(3.2rem, 14vw, 4.8rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -.04em;
+      text-shadow: 0 3px 10px rgba(0,0,0,.55);
+    }
+
+    .team-a-tint { color: var(--clr-team-a); }
+    .team-b-tint { color: var(--clr-team-b); }
+
+    /* Service-box area: from baseline to kitchen edge (centerline lives here) */
+    .court-baseline-row {
+      position: absolute;
+      left: 0; right: 0;
+      height: 72%;
+      display: flex;
+    }
+
+    .court-half-a .court-baseline-row { top: 0; }
+    .court-half-b .court-baseline-row { bottom: 0; }
+
+    .service-box {
+      flex: 1;
+      position: relative;
+    }
+
+    /* Centre line — dashed, only through service boxes */
+    .service-box[data-screen="sl"]::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 0;
+      border-right: 2px dashed rgba(255,255,255,.28);
+    }
+
+    /* Highlight diagonal receiving box */
+    .service-box.receiving-target {
+      background: rgba(255,255,255,.05);
+      animation: pulseTarget 1.6s ease-in-out infinite;
+    }
+
+    @keyframes pulseTarget {
+      0%, 100% { background: rgba(255,255,255,.04); }
+      50%      { background: rgba(255,255,255,.14); }
+    }
+
+    /* Kitchen (NVZ) — adjacent to net */
+    .kitchen {
+      position: absolute;
+      left: 0; right: 0;
+      height: 28%;
+      background: rgba(78,205,196,.18);
+    }
+
+    .kitchen-a { bottom: 0; border-bottom: 2px solid var(--clr-team-b); }
+    .kitchen-b { top: 0;    border-top:    2px solid var(--clr-team-b); }
+
+    /* Net */
+    .net-line {
+      position: relative;
+      height: 6px;
+      background: var(--clr-primary);
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .net-label {
+      position: absolute;
+      top: -10px;
+      background: var(--clr-primary);
+      color: var(--clr-on-primary);
+      padding: 2px 10px;
+      font-size: .6rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      border-radius: 999px;
+    }
+
+    /* Player slot — wrapper around token + name, sits at the baseline */
+    .player-slot {
+      position: absolute;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .court-half-a .player-slot {
+      top: 14px;
+      flex-direction: column;          /* icon first, name below (toward net) */
+    }
+
+    .court-half-b .player-slot {
+      bottom: 14px;
+      flex-direction: column-reverse;  /* name above icon (toward net) */
+    }
+
+    .player-slot[data-screen="sl"] { left: 25%; transform: translateX(-50%); }
+    .player-slot[data-screen="sr"] { left: 75%; transform: translateX(-50%); }
+
+    .player-slot.hidden { display: none; }
+
+    /* Token = circle holding the player silhouette */
+    .player-token {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.95);
+      border: 3px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: box-shadow 200ms ease, transform 250ms ease;
+    }
+
+    .player-token[data-team="A"] {
+      border-color: var(--clr-team-a);
+      color: var(--clr-team-a);
+    }
+    .player-token[data-team="B"] {
+      border-color: var(--clr-team-b);
+      color: var(--clr-team-b);
+    }
+
+    .player-icon {
+      width: 26px;
+      height: 26px;
+      fill: currentColor;
+      pointer-events: none;
+    }
+
+    .player-token.serving {
+      transform: scale(1.12);
+      box-shadow:
+        0 0 0 3px rgba(255,255,255,.55),
+        0 0 18px rgba(255,255,255,.4);
+    }
+
+    /* Paddle indicator beside the serving player (always inside the court) */
+    .player-token.serving::after {
+      content: '🏓';
+      position: absolute;
+      top: 50%;
+      font-size: 1.3rem;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,.4));
+      animation: paddleBob 1.4s ease-in-out infinite;
+    }
+
+    .player-slot[data-screen="sl"] .player-token.serving::after { right: -26px; }
+    .player-slot[data-screen="sr"] .player-token.serving::after { left: -26px; }
+
+    @keyframes paddleBob {
+      0%, 100% { translate: 0 -55%; }
+      50%      { translate: 0 -45%; }
+    }
+
+    /* Player name label */
+    .player-name {
+      font-size: .68rem;
+      font-weight: 700;
+      color: rgba(255,255,255,.92);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      cursor: pointer;
+      padding: 1px 6px;
+      background: rgba(0,0,0,.32);
+      border-radius: 4px;
+      max-width: 78px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .player-name.hidden { display: none; }
+
+    .player-name-input {
+      font-family: inherit;
+      font-size: .68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      text-align: center;
+      width: 78px;
+      background: rgba(0,0,0,.55);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.6);
+      border-radius: 4px;
+      padding: 1px 4px;
+      outline: none;
+    }
+
+    /* Tap hint badge */
+    .tap-hint {
+      position: absolute;
+      z-index: 4;
+      background: rgba(255,255,255,.16);
+      color: rgba(255,255,255,.85);
+      padding: 4px 10px;
+      border-radius: var(--r-pill);
+      font-size: .7rem;
+      font-weight: 900;
+      letter-spacing: .04em;
+      pointer-events: none;
+      opacity: .55;
+      transition: opacity 200ms;
+    }
+
+    .court-half-a .tap-hint { top: 10px; right: 14px; }
+    .court-half-b .tap-hint { bottom: 10px; left: 14px; }
+
+    .court-half:hover .tap-hint,
+    .court-half:active .tap-hint { opacity: 1; }
+
+    /* Inline rename input override (court context) */
+    .court-name .team-name-input {
+      font-family: inherit;
+      font-size: .8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      text-align: center;
+      width: 100px;
+      background: rgba(0,0,0,.45);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.6);
+      border-radius: 6px;
+      padding: 2px 6px;
+      outline: none;
+    }
+
+    /* ── Court Diagram ───────────────────────────────── */
+    #court-diagram {
+      position: relative;
+      width: 200px;
+      height: 360px;
+      margin: 16px auto;
+      border: 3px solid var(--clr-text);
+      border-radius: 4px;
+      background: #1a4a1a;
+      overflow: hidden;
+    }
+
+    /* Kitchen / NVZ zones — directly adjacent to the net */
+    #court-diagram .nvz-top {
+      position: absolute;
+      top: 90px; left: 0; right: 0;
+      height: 90px;
+      background: rgba(78,205,196,.22);
+      border-top: 2px solid var(--clr-team-b);  /* kitchen line */
+    }
+
+    #court-diagram .nvz-bot {
+      position: absolute;
+      top: 180px; left: 0; right: 0;
+      height: 90px;
+      background: rgba(78,205,196,.22);
+      border-bottom: 2px solid var(--clr-team-b);  /* kitchen line */
+    }
+
+    /* Net — between the two kitchen zones */
+    #court-diagram .net {
+      position: absolute;
+      top: 50%;
+      left: 0; right: 0;
+      height: 4px;
+      background: var(--clr-primary);
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+
+    /* Centre line — dashed, only through the service boxes (top 0-90px, bottom 270-360px) */
+    #court-diagram::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      height: 90px;
+      width: 0;
+      border-left: 2px dashed rgba(255,255,255,.3);
+      transform: translateX(-50%);
+    }
+
+    #court-diagram::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      height: 90px;
+      width: 0;
+      border-left: 2px dashed rgba(255,255,255,.3);
+      transform: translateX(-50%);
+    }
+
+    /* Labels */
+    #court-diagram span {
+      position: absolute;
+      font-family: 'Nunito', sans-serif;
+      font-size: .6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      text-align: center;
+      width: 100%;
+      left: 0;
+      color: rgba(255,255,255,.75);
+    }
+
+    #court-diagram .lbl-baseline-top { top: 4px; font-size: .55rem; }
+    #court-diagram .lbl-svc-top      { top: 38px; }
+    #court-diagram .lbl-nvz-top      { top: 126px; color: var(--clr-team-b); }
+    #court-diagram .lbl-net          { top: calc(50% + 6px); color: var(--clr-primary); z-index: 2; }
+    #court-diagram .lbl-nvz-bot      { bottom: 126px; color: var(--clr-team-b); }
+    #court-diagram .lbl-svc-bot      { bottom: 38px; }
+    #court-diagram .lbl-baseline-bot { bottom: 4px; font-size: .55rem; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Tab bar -->
+  <nav id="tab-bar">
+    <button class="tab-btn active" data-tab="score" onclick="switchTab('score')">🏓 Score</button>
+    <button class="tab-btn"        data-tab="rules" onclick="switchTab('rules')">📖 Rules</button>
+    <button id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">☀️</button>
+  </nav>
+
+  <!-- ── SCORE TAB ──────────────────────────────────── -->
+  <section id="tab-score" class="tab-panel">
+
+    <!-- Setup screen -->
+    <div id="screen-setup">
+      <h1 class="app-title">Pickleball<span class="title-accent">.</span></h1>
+
+      <div class="setup-card">
+
+        <div>
+          <label class="field-label">Format</label>
+          <div class="toggle-group" id="format-toggle">
+            <button class="toggle-btn"        data-value="singles" onclick="onFormatToggle('singles')">Singles</button>
+            <button class="toggle-btn active" data-value="doubles" onclick="onFormatToggle('doubles')">Doubles</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label">Play to</label>
+          <div class="toggle-group" id="playto-toggle">
+            <button class="toggle-btn active" data-value="11" onclick="onPlayToToggle(11)">11</button>
+            <button class="toggle-btn"        data-value="21" onclick="onPlayToToggle(21)">21</button>
+          </div>
+        </div>
+
+        <div id="name-fields">
+          <div class="name-row">
+            <label class="name-label team-a-label" id="label-name-a">Team A name</label>
+            <input class="name-input" id="name-a" type="text" placeholder="Team A" maxlength="20" autocomplete="off">
+          </div>
+          <div class="name-row">
+            <label class="name-label team-b-label" id="label-name-b">Team B name</label>
+            <input class="name-input" id="name-b" type="text" placeholder="Team B" maxlength="20" autocomplete="off">
+          </div>
+        </div>
+
+        <button id="btn-start" class="btn-primary" onclick="onStartGame()">Start Game</button>
+      </div>
+    </div>
+
+    <!-- Game screen -->
+    <div id="screen-game" class="hidden">
+
+      <div id="court-scoreboard">
+
+        <!-- Team A half (top) -->
+        <div class="court-half court-half-a" id="court-half-a" onclick="recordPoint('A')">
+          <!-- Service boxes (visual centerline + receiving target) -->
+          <div class="court-baseline-row">
+            <div class="service-box" data-screen="sl"></div>
+            <div class="service-box" data-screen="sr"></div>
+          </div>
+          <!-- Players at the baseline -->
+          <div class="player-slot" data-screen="sl">
+            <div class="player-token" data-team="A">
+              <svg class="player-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="6" r="3"/>
+                <path d="M12 11c-3.6 0-6.5 2-6.5 5v6h13v-6c0-3-2.9-5-6.5-5z"/>
+              </svg>
+            </div>
+            <div class="player-name" data-team="A" onclick="event.stopPropagation(); editPlayerName(this)" title="Tap to rename"></div>
+          </div>
+          <div class="player-slot" data-screen="sr">
+            <div class="player-token" data-team="A">
+              <svg class="player-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="6" r="3"/>
+                <path d="M12 11c-3.6 0-6.5 2-6.5 5v6h13v-6c0-3-2.9-5-6.5-5z"/>
+              </svg>
+            </div>
+            <div class="player-name" data-team="A" onclick="event.stopPropagation(); editPlayerName(this)" title="Tap to rename"></div>
+          </div>
+          <!-- Kitchen + score near the net -->
+          <div class="kitchen kitchen-a"></div>
+          <div class="court-info court-info-a">
+            <span class="court-name team-a-tint" id="display-name-a" onclick="event.stopPropagation(); editName('A')" title="Tap to rename">Team A</span>
+            <span class="court-score team-a-tint" id="score-a">0</span>
+          </div>
+          <div class="tap-hint">+1</div>
+        </div>
+
+        <!-- Net -->
+        <div class="net-line"><span class="net-label">Net</span></div>
+
+        <!-- Team B half (bottom, mirrored) -->
+        <div class="court-half court-half-b" id="court-half-b" onclick="recordPoint('B')">
+          <div class="kitchen kitchen-b"></div>
+          <div class="court-info court-info-b">
+            <span class="court-score team-b-tint" id="score-b">0</span>
+            <span class="court-name team-b-tint" id="display-name-b" onclick="event.stopPropagation(); editName('B')" title="Tap to rename">Team B</span>
+          </div>
+          <div class="court-baseline-row">
+            <div class="service-box" data-screen="sl"></div>
+            <div class="service-box" data-screen="sr"></div>
+          </div>
+          <div class="player-slot" data-screen="sl">
+            <div class="player-token" data-team="B">
+              <svg class="player-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="6" r="3"/>
+                <path d="M12 11c-3.6 0-6.5 2-6.5 5v6h13v-6c0-3-2.9-5-6.5-5z"/>
+              </svg>
+            </div>
+            <div class="player-name" data-team="B" onclick="event.stopPropagation(); editPlayerName(this)" title="Tap to rename"></div>
+          </div>
+          <div class="player-slot" data-screen="sr">
+            <div class="player-token" data-team="B">
+              <svg class="player-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="6" r="3"/>
+                <path d="M12 11c-3.6 0-6.5 2-6.5 5v6h13v-6c0-3-2.9-5-6.5-5z"/>
+              </svg>
+            </div>
+            <div class="player-name" data-team="B" onclick="event.stopPropagation(); editPlayerName(this)" title="Tap to rename"></div>
+          </div>
+          <div class="tap-hint">+1</div>
+        </div>
+
+      </div>
+
+      <div id="serve-bar">
+        <span id="serve-icon">🏓</span>
+        <span id="serve-text">Team A is serving</span>
+      </div>
+
+      <div id="game-actions">
+        <button id="btn-undo" class="btn-secondary" onclick="undoLastPoint()" disabled>↩ Undo</button>
+        <button id="btn-new-game" class="btn-secondary" onclick="onNewGame()">New Game</button>
+      </div>
+
+      <details id="score-log-container">
+        <summary id="log-summary">Score Log <span id="log-count">(0 events)</span></summary>
+        <ol id="score-log" reversed></ol>
+      </details>
+
+    </div>
+  </section>
+
+  <!-- ── RULES TAB ─────────────────────────────────── -->
+  <section id="tab-rules" class="tab-panel hidden">
+    <div class="rules-content">
+
+      <h2 class="rules-title">How to Play Pickleball</h2>
+
+      <article class="rules-section">
+        <h3 class="rule-heading"><span class="rule-icon">🏅</span> What is Pickleball?</h3>
+        <p>Pickleball is a fast-growing paddle sport that combines elements of tennis, badminton, and ping-pong. It's played on a compact court with a solid paddle and a lightweight plastic ball with holes.</p>
+        <p>It's easy to learn, great for all ages, and can be played as <span class="hl">singles</span> (1 vs 1) or <span class="hl">doubles</span> (2 vs 2).</p>
+      </article>
+
+      <article class="rules-section">
+        <h3 class="rule-heading"><span class="rule-icon">🟩</span> The Court</h3>
+        <p>A pickleball court is <span class="hl">44 feet long</span> and <span class="hl">20 feet wide</span> — about the size of a badminton court. Here's what each zone is called:</p>
+
+        <div id="court-diagram" role="img" aria-label="Pickleball court diagram">
+          <div class="nvz-top"></div>
+          <div class="nvz-bot"></div>
+          <div class="net"></div>
+          <span class="lbl-baseline-top">Baseline</span>
+          <span class="lbl-nvz-top">Kitchen (NVZ)</span>
+          <span class="lbl-net">— Net —</span>
+          <span class="lbl-nvz-bot">Kitchen (NVZ)</span>
+          <span class="lbl-baseline-bot">Baseline</span>
+          <span class="lbl-svc-top">Service Boxes</span>
+          <span class="lbl-svc-bot">Service Boxes</span>
+        </div>
+
+        <p>The <span class="hl">Kitchen</span> (officially the Non-Volley Zone, or NVZ) is the 7-foot zone on each side of the net. The <span class="hl">Service Boxes</span> are behind the kitchen, divided by a centre line.</p>
+      </article>
+
+      <article class="rules-section">
+        <h3 class="rule-heading"><span class="rule-icon">🎾</span> Serving</h3>
+        <p>The serve must be made <span class="hl">underhand</span> — your paddle must contact the ball below your waist. The ball must be hit in the air (not bounced first).</p>
+        <p>The serve must land in the <span class="hl">diagonal service box</span> across the net. It must clear the kitchen — a serve that lands in the kitchen is a fault.</p>
+        <p>In <span class="hl">doubles</span>, both players on a team get to serve before the serve rotates to the other team (except at the very start of the game, when only one serve is given).</p>
+        <p>In <span class="hl">singles</span>, serve from the <span class="hl">right side</span> when your score is even, and the <span class="hl">left side</span> when your score is odd.</p>
+      </article>
+
+      <article class="rules-section">
+        <h3 class="rule-heading"><span class="rule-icon">🔄</span> Serve Rotation</h3>
+
+        <p style="margin-bottom:12px">How the serve moves depends on whether you're playing singles or doubles.</p>
+
+        <p style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--clr-primary);margin-bottom:6px">Doubles</p>
+        <ul class="rules-list" style="margin-bottom:14px">
+          <li><span class="hl">Serving team scores</span> → same server keeps serving. No rotation.</li>
+          <li><span class="hl">Serving team loses the rally</span> → the <em>other player</em> on the same team becomes Server 2 and serves next.</li>
+          <li><span class="hl">Server 2 also loses</span> → the serve rotates to the opposing team. Their Server 1 starts.</li>
+          <li><span class="hl">Start of game exception</span>: the very first team begins as "Server 2" only — they get just one serve before the other team takes over. This prevents an unfair head-start.</li>
+        </ul>
+
+        <p style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--clr-muted);margin-bottom:6px">Who is Server 1 when the serve rotates?</p>
+        <p style="margin-bottom:8px">When a team receives the serve, <span class="hl">Server 1 is always the player currently standing in the right service court</span>. Which player that is depends on how many points that team has scored:</p>
+        <ul class="rules-list" style="margin-bottom:8px">
+          <li><span class="hl">Even score</span> (0, 2, 4…) → players are in their original starting positions. The player who started on the right serves first.</li>
+          <li><span class="hl">Odd score</span> (1, 3, 5…) → players have swapped sides from scoring, so the other player is now on the right and serves first.</li>
+        </ul>
+        <p>Players only switch sides within their own court <span class="hl">when their team scores</span> — never due to losing a rally or a serve rotation. So the score always tells you exactly who's on which side.</p>
+
+        <p style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--clr-primary);margin-bottom:6px">Singles</p>
+        <ul class="rules-list">
+          <li><span class="hl">Server scores</span> → keep serving. Switch to the other side of the court (right if score is even, left if odd).</li>
+          <li><span class="hl">Server loses the rally</span> → serve passes to the opponent. No point is scored.</li>
+        </ul>
+      </article>
+
+      <article class="rules-section">
+        <h3 class="rule-heading"><span class="rule-icon">🔢</span> Scoring</h3>
+        <p>Only the <span class="hl">serving team</span> can score points. If the receiving team wins the rally, they earn the serve — but no point is scored.</p>
+        <p>In doubles, the score is called as three numbers: <span class="hl">serving team score – receiving team score – server number</span> (e.g. <em>"5-3-2"</em> means serving team has 5, receiving team has 3, and it's server #2's turn).</p>
+        <p>The game starts with the call <span class="hl">"0-0-2"</span> — the very first team only gets one serve to prevent an unfair serving advantage at the start.</p>
+      </article>
+
+      <article class="rules-section">
+        <h3 class="rule-heading"><span class="rule-icon">🍳</span> The Kitchen Rule</h3>
+        <p>You <span class="hl">cannot volley</span> (hit the ball in the air without letting it bounce) while standing in the kitchen or stepping on the kitchen line.</p>
+        <p>You <span class="hl">can</span> enter the kitchen to play a ball that has bounced in there — just make sure you're back out before volleying again.</p>
+        <p>This rule keeps players from dominating the net with overhead smashes and is what makes pickleball unique!</p>
+      </article>
+
+      <article class="rules-section">
+        <h3 class="rule-heading"><span class="rule-icon">⚠️</span> Common Faults</h3>
+        <ul class="rules-list">
+          <li>Hitting the ball out of bounds</li>
+          <li>The ball landing in the kitchen on a serve</li>
+          <li>Volleying from inside the kitchen (or stepping on the kitchen line while volleying)</li>
+          <li>Failing the <span class="hl">two-bounce rule</span>: the serve and return must each bounce once before either team can volley</li>
+          <li>The serve hitting the net or landing out of the service box</li>
+          <li>Hitting the ball before it crosses the net</li>
+        </ul>
+      </article>
+
+      <article class="rules-section">
+        <h3 class="rule-heading"><span class="rule-icon">🏆</span> Winning the Game</h3>
+        <p>Standard games are played to <span class="hl">11 points</span>, and you must win by <span class="hl">2 points</span>. Tournament games may be played to 15 or 21.</p>
+        <p>If the score reaches 10-10, play continues until one team leads by 2 — for example, 12-10 or 15-13. There is no cap on the final score.</p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- Win overlay -->
+  <div id="win-overlay" class="hidden">
+    <div id="win-card">
+      <div id="win-emoji">🏆</div>
+      <div id="win-team-name">Team A</div>
+      <div id="win-message">Wins!</div>
+      <div id="win-score-display">11 – 9</div>
+      <button class="btn-primary" onclick="onPlayAgain()">Play Again</button>
+      <button class="btn-secondary" onclick="onNewGame()">New Game</button>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+  // ── Utilities ──────────────────────────────────────
+  const el = id => document.getElementById(id);
+  const opponent = t => t === 'A' ? 'B' : 'A';
+  const deepClone = o => JSON.parse(JSON.stringify(o));
+  const getName = t => state.names[t] || (t === 'A' ? 'Team A' : 'Team B');
+
+  function setToggleActive(groupId, value) {
+    el(groupId).querySelectorAll('.toggle-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.value == value);
+    });
+  }
+
+  // ── State ──────────────────────────────────────────
+  const INIT_STATE = () => ({
+    phase: 'setup',
+    format: 'doubles',
+    playTo: 11,
+    names: { A: '', B: '' },
+    playerNames: { A: ['', ''], B: ['', ''] },  // doubles only — index 0 = P1, 1 = P2
+    scores: { A: 0, B: 0 },
+    serving: 'A',
+    serverNum: 1,
+    serveSide: 'R',     // 'R' or 'L' from serving player's perspective (doubles)
+    isFirstServe: true,
+    winner: null,
+    history: []
+  });
+
+  const getPlayerName = (team, idx) => state.playerNames[team][idx] || `P${idx + 1}`;
+
+  let state = INIT_STATE();
+
+  // ── Tab switching ──────────────────────────────────
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    el('tab-score').classList.toggle('hidden', tab !== 'score');
+    el('tab-rules').classList.toggle('hidden', tab !== 'rules');
+  }
+
+  // ── Setup screen ───────────────────────────────────
+  function onFormatToggle(value) {
+    state.format = value;
+    setToggleActive('format-toggle', value);
+    // Update name labels
+    const isDoubles = value === 'doubles';
+    el('label-name-a').textContent = isDoubles ? 'Team A name' : 'Player A name';
+    el('label-name-b').textContent = isDoubles ? 'Team B name' : 'Player B name';
+    el('name-a').placeholder = isDoubles ? 'Team A' : 'Player A';
+    el('name-b').placeholder = isDoubles ? 'Team B' : 'Player B';
+  }
+
+  function onPlayToToggle(value) {
+    state.playTo = value;
+    setToggleActive('playto-toggle', value);
+  }
+
+  function onStartGame() {
+    const rawA = el('name-a').value.trim();
+    const rawB = el('name-b').value.trim();
+    const isDoubles = state.format === 'doubles';
+    state.names.A = rawA || (isDoubles ? 'Team A' : 'Player A');
+    state.names.B = rawB || (isDoubles ? 'Team B' : 'Player B');
+    startGame();
+  }
+
+  function startGame() {
+    state.scores = { A: 0, B: 0 };
+    state.serving = 'A';
+    state.serverNum = 2;   // doubles start with server 2 (one serve rule)
+    state.serveSide = 'R';
+    state.isFirstServe = true;
+    state.winner = null;
+    state.phase = 'playing';
+    state.history = [];
+    el('score-log').innerHTML = '';
+    el('screen-setup').classList.add('hidden');
+    el('screen-game').classList.remove('hidden');
+    el('win-overlay').classList.add('hidden');
+    renderGame();
+  }
+
+  // ── Scoring logic ──────────────────────────────────
+  function applyDoublesLogic(rallyWinner) {
+    if (rallyWinner === state.serving) {
+      // Serving team wins: score point, keep serving, server swaps sides
+      state.scores[rallyWinner]++;
+      state.serveSide = state.serveSide === 'R' ? 'L' : 'R';
+    } else {
+      // Receiving team wins rally
+      if (state.isFirstServe) {
+        // Very first serve of game: skip server 2, go straight to other team
+        state.serving = rallyWinner;
+        state.serverNum = 1;
+        state.serveSide = 'R';
+        state.isFirstServe = false;
+      } else if (state.serverNum === 1) {
+        // Hand to server 2 on same team — partner is on the other side
+        state.serverNum = 2;
+        state.serveSide = state.serveSide === 'R' ? 'L' : 'R';
+      } else {
+        // Server 2 loses — rotate to other team, server 1
+        state.serving = rallyWinner;
+        state.serverNum = 1;
+        state.serveSide = 'R';
+      }
+      state.isFirstServe = false;
+    }
+    if (state.isFirstServe && rallyWinner === state.serving) {
+      state.isFirstServe = false;
+    }
+  }
+
+  function applySinglesLogic(rallyWinner) {
+    if (rallyWinner === state.serving) {
+      state.scores[rallyWinner]++;
+    } else {
+      state.serving = rallyWinner;
+    }
+  }
+
+  function checkWin() {
+    const { scores, playTo } = state;
+    if (scores.A >= playTo && scores.A - scores.B >= 2) state.winner = 'A';
+    else if (scores.B >= playTo && scores.B - scores.A >= 2) state.winner = 'B';
+    if (state.winner) state.phase = 'ended';
+  }
+
+  function recordPoint(rallyWinner) {
+    if (state.phase !== 'playing') return;
+
+    // Snapshot state before mutation (strip history to avoid nesting)
+    const snapshot = deepClone({ ...state, history: [] });
+    state.history.push(snapshot);
+
+    const prevScores = { ...state.scores };
+    const prevServing = state.serving;
+    const prevServerNum = state.serverNum;
+
+    if (state.format === 'doubles') {
+      applyDoublesLogic(rallyWinner);
+    } else {
+      applySinglesLogic(rallyWinner);
+    }
+
+    checkWin();
+    appendLogEntry(rallyWinner, prevScores, prevServing, prevServerNum);
+    renderGame();
+  }
+
+  // ── Undo ───────────────────────────────────────────
+  function undoLastPoint() {
+    if (state.history.length === 0) return;
+    const snapshot = state.history.pop();
+    state = { ...snapshot, history: state.history };
+    rebuildLog();
+    el('win-overlay').classList.add('hidden');
+    renderGame();
+  }
+
+  // ── Render ─────────────────────────────────────────
+  function renderGame() {
+    // Scores
+    el('score-a').textContent = state.scores.A;
+    el('score-b').textContent = state.scores.B;
+
+    // Names
+    el('display-name-a').textContent = getName('A');
+    el('display-name-b').textContent = getName('B');
+
+    // Court visualization
+    renderCourt();
+
+    // Serve bar
+    updateServeBar();
+
+    // Undo button
+    el('btn-undo').disabled = state.history.length === 0;
+
+    // Win overlay
+    if (state.phase === 'ended' && state.winner) {
+      showWinOverlay();
+    }
+  }
+
+  // Map a player-perspective side ('R' / 'L') to a screen position ('sl' / 'sr').
+  // Team A is at the top of the screen facing down → their R is screen-right.
+  // Team B is at the bottom facing up → their R is screen-left.
+  function sideToScreen(team, side) {
+    if (team === 'A') return side === 'R' ? 'sr' : 'sl';
+    return side === 'R' ? 'sl' : 'sr';
+  }
+
+  // Returns the serving player's side ('R' or 'L') from their perspective.
+  function currentServeSide() {
+    if (state.format === 'doubles') return state.serveSide;
+    return state.scores[state.serving] % 2 === 0 ? 'R' : 'L';
+  }
+
+  function renderCourt() {
+    ['A', 'B'].forEach(team => {
+      const half = el(`court-half-${team.toLowerCase()}`);
+      const score = state.scores[team];
+      const swapped = score % 2 === 1;   // players swapped from starting positions
+
+      const slots = {
+        sl: half.querySelector('.player-slot[data-screen="sl"]'),
+        sr: half.querySelector('.player-slot[data-screen="sr"]')
+      };
+      const tokens = {
+        sl: slots.sl.querySelector('.player-token'),
+        sr: slots.sr.querySelector('.player-token')
+      };
+      const labels = {
+        sl: slots.sl.querySelector('.player-name'),
+        sr: slots.sr.querySelector('.player-name')
+      };
+
+      // Reset
+      ['sl', 'sr'].forEach(pos => {
+        tokens[pos].classList.remove('serving');
+        slots[pos].classList.remove('hidden');
+        labels[pos].classList.remove('hidden');
+        labels[pos].textContent = '';
+        delete labels[pos].dataset.playerIdx;
+      });
+      half.querySelectorAll('.service-box').forEach(b => b.classList.remove('receiving-target'));
+
+      if (state.format === 'doubles') {
+        // P1 starts in the team's right court; flip when team's score is odd.
+        const p1ScreenPos = sideToScreen(team, swapped ? 'L' : 'R');
+        const p2ScreenPos = p1ScreenPos === 'sl' ? 'sr' : 'sl';
+        labels[p1ScreenPos].textContent = getPlayerName(team, 0);
+        labels[p1ScreenPos].dataset.playerIdx = '0';
+        labels[p2ScreenPos].textContent = getPlayerName(team, 1);
+        labels[p2ScreenPos].dataset.playerIdx = '1';
+      } else {
+        // Singles: one player per side, position from own score parity.
+        const playerScreenPos = sideToScreen(team, score % 2 === 0 ? 'R' : 'L');
+        const otherPos = playerScreenPos === 'sl' ? 'sr' : 'sl';
+        slots[otherPos].classList.add('hidden');
+        // Team name is shown near the net — hide redundant label under the player.
+        labels[playerScreenPos].classList.add('hidden');
+      }
+
+      half.classList.toggle('serving', state.serving === team);
+    });
+
+    // Highlight serving player + diagonal receiving box
+    const serveSide = currentServeSide();
+    const servingScreen = sideToScreen(state.serving, serveSide);
+    const servingHalf = el(`court-half-${state.serving.toLowerCase()}`);
+    const servingToken = servingHalf.querySelector(`.player-slot[data-screen="${servingScreen}"] .player-token`);
+    if (servingToken) servingToken.classList.add('serving');
+
+    const receivingTeam = opponent(state.serving);
+    const receivingHalf = el(`court-half-${receivingTeam.toLowerCase()}`);
+    const targetScreen = servingScreen === 'sl' ? 'sr' : 'sl';
+    const targetBox = receivingHalf.querySelector(`.service-box[data-screen="${targetScreen}"]`);
+    if (targetBox) targetBox.classList.add('receiving-target');
+  }
+
+  function editPlayerName(labelEl) {
+    if (labelEl.querySelector('input')) return;
+    const team = labelEl.dataset.team;
+    const idx = parseInt(labelEl.dataset.playerIdx, 10);
+    if (Number.isNaN(idx)) return;
+
+    const current = getPlayerName(team, idx);
+    const input = document.createElement('input');
+    input.className = 'player-name-input';
+    input.value = current;
+    input.maxLength = 16;
+
+    labelEl.textContent = '';
+    labelEl.appendChild(input);
+    input.focus();
+    input.select();
+
+    function commit() {
+      state.playerNames[team][idx] = input.value.trim();
+      renderGame();
+    }
+
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+      if (e.key === 'Escape') { input.value = current; input.blur(); }
+    });
+  }
+
+  function updateServeBar() {
+    const s = state.serving;
+    const name = getName(s);
+    let text;
+
+    if (state.format === 'doubles') {
+      // Pickleball call format: server-score – receiver-score – server-number
+      const oppScore = state.scores[opponent(s)];
+      text = `${name} serving · ${state.scores[s]}–${oppScore}–${state.serverNum}`;
+    } else {
+      const side = state.scores[s] % 2 === 0 ? 'right' : 'left';
+      text = `${name} serving from the ${side}`;
+    }
+
+    el('serve-text').textContent = text;
+    el('serve-icon').textContent = s === 'A' ? '🔴' : '🔵';
+  }
+
+  function showWinOverlay() {
+    const w = state.winner;
+    const name = getName(w);
+    el('win-team-name').textContent = name;
+    el('win-team-name').style.color = w === 'A' ? 'var(--clr-team-a)' : 'var(--clr-team-b)';
+    el('win-score-display').textContent = `${state.scores.A} – ${state.scores.B}`;
+    el('win-overlay').classList.remove('hidden');
+  }
+
+  // ── Score log ──────────────────────────────────────
+  function appendLogEntry(rallyWinner, prevScores, prevServing, prevServerNum) {
+    const li = document.createElement('li');
+    const winnerName = getName(rallyWinner);
+    const colorClass = rallyWinner === 'A' ? 'log-team-a' : 'log-team-b';
+
+    const rallySpan = `<span class="log-rally ${colorClass}">${winnerName} wins rally</span>`;
+    const scoreSpan = `<span class="log-score">${state.scores.A}–${state.scores.B}</span>`;
+
+    let serveNote = '';
+    if (state.format === 'doubles') {
+      serveNote = `${getName(state.serving)} S${state.serverNum}`;
+    } else {
+      serveNote = `${getName(state.serving)} serves`;
+    }
+    const serveSpan = `<span class="log-serve">${serveNote}</span>`;
+
+    li.innerHTML = `${rallySpan} ${scoreSpan} ${serveSpan}`;
+    el('score-log').prepend(li);
+    updateLogCount();
+  }
+
+  function rebuildLog() {
+    el('score-log').innerHTML = '';
+    // Replay history to recreate log entries
+    const entries = [...state.history];
+    for (let i = 0; i < entries.length; i++) {
+      const before = entries[i];
+      const after = i + 1 < entries.length ? entries[i + 1] : state;
+      // Determine who won the rally: whoever's score increased, or (if no score change) figure from serve change
+      let rallyWinner = null;
+      if (after.scores.A > before.scores.A) rallyWinner = 'A';
+      else if (after.scores.B > before.scores.B) rallyWinner = 'B';
+      else rallyWinner = after.serving; // serve rotated, receiver won
+
+      const li = document.createElement('li');
+      const colorClass = rallyWinner === 'A' ? 'log-team-a' : 'log-team-b';
+      const rallySpan = `<span class="log-rally ${colorClass}">${before.names[rallyWinner] || (rallyWinner === 'A' ? 'Team A' : 'Team B')} wins rally</span>`;
+      const scoreSpan = `<span class="log-score">${after.scores.A}–${after.scores.B}</span>`;
+      let serveNote = after.format === 'doubles'
+        ? `${after.names[after.serving] || after.serving} S${after.serverNum}`
+        : `${after.names[after.serving] || after.serving} serves`;
+      const serveSpan = `<span class="log-serve">${serveNote}</span>`;
+      li.innerHTML = `${rallySpan} ${scoreSpan} ${serveSpan}`;
+      el('score-log').appendChild(li);
+    }
+    updateLogCount();
+  }
+
+  function updateLogCount() {
+    const count = el('score-log').querySelectorAll('li').length;
+    el('log-count').textContent = `(${count} ${count === 1 ? 'event' : 'events'})`;
+  }
+
+  // ── New game / play again ──────────────────────────
+  function onNewGame() {
+    state = INIT_STATE();
+    el('screen-game').classList.add('hidden');
+    el('screen-setup').classList.remove('hidden');
+    el('win-overlay').classList.add('hidden');
+    el('score-log').innerHTML = '';
+    // Reset setup UI
+    setToggleActive('format-toggle', state.format);
+    setToggleActive('playto-toggle', state.playTo);
+    el('name-a').value = '';
+    el('name-b').value = '';
+  }
+
+  function onPlayAgain() {
+    // Keep format, playTo, names — just reset game
+    state.scores = { A: 0, B: 0 };
+    state.serving = 'A';
+    state.serverNum = 2;
+    state.serveSide = 'R';
+    state.isFirstServe = true;
+    state.winner = null;
+    state.phase = 'playing';
+    state.history = [];
+    el('score-log').innerHTML = '';
+    el('win-overlay').classList.add('hidden');
+    renderGame();
+  }
+
+  // ── Inline name editing ────────────────────────────
+  function editName(team) {
+    const div = el(`display-name-${team.toLowerCase()}`);
+    if (div.querySelector('input')) return; // already editing
+
+    const current = getName(team);
+    const input = document.createElement('input');
+    input.className = 'team-name-input';
+    input.value = current;
+    input.maxLength = 20;
+
+    div.textContent = '';
+    div.appendChild(input);
+    input.focus();
+    input.select();
+
+    function commit() {
+      const val = input.value.trim();
+      state.names[team] = val || (state.format === 'doubles' ? `Team ${team}` : `Player ${team}`);
+      renderGame();
+    }
+
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+      if (e.key === 'Escape') { input.value = current; input.blur(); }
+    });
+  }
+
+  // ── Theme ──────────────────────────────────────────
+  function toggleTheme() {
+    const isDark = document.documentElement.dataset.theme === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem('pb-theme', next);
+  }
+
+  function applyTheme(theme) {
+    const isDark = theme === 'dark';
+    document.documentElement.dataset.theme = isDark ? 'dark' : '';
+    el('theme-toggle').textContent = isDark ? '🌙' : '☀️';
+    document.getElementById('meta-theme-color').content = isDark ? '#0D1829' : '#F0F5FF';
+  }
+
+  // ── Boot ───────────────────────────────────────────
+  applyTheme(localStorage.getItem('pb-theme') || 'dark');
+</script>
+</body>
+</html>
