@@ -1,0 +1,104 @@
+#court-diagram {
+    position: relative;
+    width: 200px;
+    height: 360px;
+    margin: 16px auto;
+    border: 3px solid var(--clr-text);
+    border-radius: 4px;
+    background: #1a4a1a;
+    overflow: hidden;
+}
+
+#court-diagram .nvz-top {
+    position: absolute;
+    top: 90px;
+    left: 0;
+    right: 0;
+    height: 90px;
+    background: rgba(78, 205, 196, 0.22);
+    border-top: 2px solid var(--clr-team-b);
+}
+
+#court-diagram .nvz-bot {
+    position: absolute;
+    top: 180px;
+    left: 0;
+    right: 0;
+    height: 90px;
+    background: rgba(78, 205, 196, 0.22);
+    border-bottom: 2px solid var(--clr-team-b);
+}
+
+#court-diagram .net {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--clr-primary);
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+#court-diagram::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    height: 90px;
+    width: 0;
+    border-left: 2px dashed rgba(255, 255, 255, 0.3);
+    transform: translateX(-50%);
+}
+
+#court-diagram::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    height: 90px;
+    width: 0;
+    border-left: 2px dashed rgba(255, 255, 255, 0.3);
+    transform: translateX(-50%);
+}
+
+#court-diagram span {
+    position: absolute;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+    width: 100%;
+    left: 0;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+#court-diagram .lbl-baseline-top {
+    top: 4px;
+    font-size: 0.55rem;
+}
+#court-diagram .lbl-svc-top {
+    top: 38px;
+}
+#court-diagram .lbl-nvz-top {
+    top: 126px;
+    color: var(--clr-team-b);
+}
+#court-diagram .lbl-net {
+    top: calc(50% + 6px);
+    color: var(--clr-primary);
+    z-index: 2;
+}
+#court-diagram .lbl-nvz-bot {
+    bottom: 126px;
+    color: var(--clr-team-b);
+}
+#court-diagram .lbl-svc-bot {
+    bottom: 38px;
+}
+#court-diagram .lbl-baseline-bot {
+    bottom: 4px;
+    font-size: 0.55rem;
+}

@@ -1,0 +1,98 @@
+.rules-content {
+    padding: 24px 20px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.rules-title {
+    font-size: clamp(1.4rem, 6vw, 1.9rem);
+    font-weight: 900;
+    color: var(--clr-primary);
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+}
+
+.rules-section {
+    background: var(--clr-surface);
+    border-radius: var(--r-md);
+    padding: 18px;
+    border: 1px solid var(--clr-border);
+}
+
+.rule-heading {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: var(--clr-text);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rule-icon {
+    font-size: 1.2rem;
+}
+
+.rules-section p {
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--clr-muted);
+}
+
+.rules-section p + p {
+    margin-top: 8px;
+}
+
+.rules-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+}
+
+.rules-list li {
+    font-size: 0.9rem;
+    color: var(--clr-muted);
+    line-height: 1.5;
+    padding-left: 20px;
+    position: relative;
+}
+
+.rules-list li::before {
+    content: '•';
+    position: absolute;
+    left: 4px;
+    color: var(--clr-primary);
+    font-weight: 900;
+}
+
+.subhead {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--clr-primary);
+    margin-bottom: 6px;
+}
+
+.subhead-muted {
+    color: var(--clr-muted);
+}
+
+.hl-a {
+    color: var(--clr-team-a);
+    font-weight: 700;
+}
+
+.hl-b {
+    color: var(--clr-team-b);
+    font-weight: 700;
+}
+
+.hl {
+    color: var(--clr-primary);
+    font-weight: 700;
+}
