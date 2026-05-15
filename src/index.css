@@ -1,0 +1,136 @@
+@import 'tailwindcss';
+
+/* ── Light theme (Xyicon-inspired) ─────────────── */
+:root {
+    --clr-bg: #f0f5ff;
+    --clr-surface: #ffffff;
+    --clr-surface-2: #e4edfc;
+    --clr-primary: #1b72ef;
+    --clr-primary-dk: #1560cc;
+    --clr-team-a: #f56a22;
+    --clr-team-a-dk: #d4511a;
+    --clr-team-b: #00b0a2;
+    --clr-team-b-dk: #009688;
+    --clr-text: #1a2744;
+    --clr-muted: #6b7fa3;
+    --clr-border: #c8d8f0;
+    --clr-on-primary: #ffffff;
+    --clr-on-team: #ffffff;
+    --win-overlay-bg: rgba(26, 39, 68, 0.88);
+    --shadow: 0 2px 16px rgba(27, 114, 239, 0.1);
+    --shadow-primary: 0 4px 16px rgba(27, 114, 239, 0.3);
+    --score-size: clamp(4.5rem, 17vw, 7.5rem);
+    --btn-h: clamp(60px, 14vw, 88px);
+    --r-md: 14px;
+    --r-lg: 22px;
+    --r-pill: 999px;
+    --trans: 160ms ease;
+}
+
+[data-theme='dark'] {
+    --clr-bg: #0d1829;
+    --clr-surface: #162236;
+    --clr-surface-2: #1e2f47;
+    --clr-primary: #4d9bff;
+    --clr-primary-dk: #1b72ef;
+    --clr-team-a: #ff7a3d;
+    --clr-team-a-dk: #e55a1a;
+    --clr-team-b: #00c9b8;
+    --clr-team-b-dk: #00a89a;
+    --clr-text: #e8f0ff;
+    --clr-muted: #7a9ab8;
+    --clr-border: #243352;
+    --clr-on-primary: #0d1829;
+    --clr-on-team: #0d1829;
+    --win-overlay-bg: rgba(13, 24, 41, 0.93);
+    --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+    --shadow-primary: 0 4px 16px rgba(77, 155, 255, 0.3);
+}
+
+/* Expose tokens to Tailwind v4 utilities */
+@theme inline {
+    --color-bg: var(--clr-bg);
+    --color-surface: var(--clr-surface);
+    --color-surface-2: var(--clr-surface-2);
+    --color-primary: var(--clr-primary);
+    --color-primary-dk: var(--clr-primary-dk);
+    --color-team-a: var(--clr-team-a);
+    --color-team-a-dk: var(--clr-team-a-dk);
+    --color-team-b: var(--clr-team-b);
+    --color-team-b-dk: var(--clr-team-b-dk);
+    --color-text: var(--clr-text);
+    --color-muted: var(--clr-muted);
+    --color-border-app: var(--clr-border);
+    --color-on-primary: var(--clr-on-primary);
+    --color-on-team: var(--clr-on-team);
+    --font-sans:
+        'Nunito', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --radius-md: 14px;
+    --radius-lg: 22px;
+    --radius-pill: 999px;
+}
+
+/* ── Base ───────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    font-family: var(--font-sans);
+    background: var(--clr-bg);
+    color: var(--clr-text);
+    min-height: 100%;
+    overflow-x: hidden;
+}
+
+/* ══════════════════════════════════════════════════
+   Animations shared across components
+   ══════════════════════════════════════════════════ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes pulseTarget {
+    0%,
+    100% {
+        background: rgba(255, 255, 255, 0.04);
+    }
+    50% {
+        background: rgba(255, 255, 255, 0.14);
+    }
+}
+
+@keyframes paddleBob {
+    0%,
+    100% {
+        translate: 0 -55%;
+    }
+    50% {
+        translate: 0 -45%;
+    }
+}
