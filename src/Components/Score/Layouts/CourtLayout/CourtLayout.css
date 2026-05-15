@@ -1,0 +1,356 @@
+/* ══════════════════════════════════════════════════
+   COURT LAYOUT — game screen
+   ══════════════════════════════════════════════════ */
+
+#screen-game {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-bottom: 24px;
+}
+
+/* ── Court scoreboard ────────────────────────────── */
+#court-scoreboard {
+    position: relative;
+    width: calc(100% - 32px);
+    max-width: 340px;
+    aspect-ratio: 5 / 7;
+    margin: 20px auto 12px;
+    background: #1a4a1a;
+    border: 3px solid var(--clr-text);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+}
+
+[data-theme='dark'] #court-scoreboard {
+    background: #143614;
+}
+
+.court-half {
+    position: relative;
+    flex: 1;
+    cursor: pointer;
+    transition:
+        filter var(--trans),
+        box-shadow var(--trans);
+}
+
+.court-half:active {
+    filter: brightness(1.18);
+}
+
+.court-half-a.serving {
+    box-shadow: inset 0 0 0 3px var(--clr-team-a);
+}
+
+.court-half-b.serving {
+    box-shadow: inset 0 0 0 3px var(--clr-team-b);
+}
+
+/* Score + team name centered near the net */
+.court-info {
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    pointer-events: none;
+}
+
+.court-info-a {
+    bottom: 30%;
+}
+
+.court-info-b {
+    top: 30%;
+}
+
+.court-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    pointer-events: auto;
+    padding: 1px 6px 2px;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.22);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}
+
+.court-score {
+    font-size: clamp(3.2rem, 14vw, 4.8rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.55);
+}
+
+.team-a-tint {
+    color: var(--clr-team-a);
+}
+
+.team-b-tint {
+    color: var(--clr-team-b);
+}
+
+/* Service-box area: from baseline to kitchen edge (centerline lives here) */
+.court-baseline-row {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 72%;
+    display: flex;
+}
+
+.court-half-a .court-baseline-row {
+    top: 0;
+}
+
+.court-half-b .court-baseline-row {
+    bottom: 0;
+}
+
+.service-box {
+    flex: 1;
+    position: relative;
+}
+
+/* Centre line — dashed, only through the left service box's right edge */
+.service-box[data-screen='sl']::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-right: 2px dashed rgba(255, 255, 255, 0.28);
+}
+
+.service-box.receiving-target {
+    background: rgba(255, 255, 255, 0.05);
+    animation: pulseTarget 1.6s ease-in-out infinite;
+}
+
+/* Kitchen (NVZ) — adjacent to net */
+.kitchen {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 28%;
+    background: rgba(78, 205, 196, 0.18);
+}
+
+.kitchen-a {
+    bottom: 0;
+    border-bottom: 2px solid var(--clr-team-b);
+}
+
+.kitchen-b {
+    top: 0;
+    border-top: 2px solid var(--clr-team-b);
+}
+
+/* Net */
+.net-line {
+    position: relative;
+    height: 6px;
+    background: var(--clr-primary);
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.net-label {
+    position: absolute;
+    top: -10px;
+    background: var(--clr-primary);
+    color: var(--clr-on-primary);
+    padding: 2px 10px;
+    font-size: 0.6rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 999px;
+}
+
+/* Player slot — wrapper around token + name, sits at the baseline */
+.player-slot {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.court-half-a .player-slot {
+    top: 14px;
+    flex-direction: column;
+}
+
+.court-half-b .player-slot {
+    bottom: 14px;
+    flex-direction: column-reverse;
+}
+
+.player-slot[data-screen='sl'] {
+    left: 25%;
+    transform: translateX(-50%);
+}
+
+.player-slot[data-screen='sr'] {
+    left: 75%;
+    transform: translateX(-50%);
+}
+
+/* Token = circle holding the player silhouette */
+.player-token {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    border: 3px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        box-shadow 200ms ease,
+        transform 250ms ease;
+}
+
+.player-token[data-team='A'] {
+    border-color: var(--clr-team-a);
+    color: var(--clr-team-a);
+}
+
+.player-token[data-team='B'] {
+    border-color: var(--clr-team-b);
+    color: var(--clr-team-b);
+}
+
+.player-icon {
+    width: 26px;
+    height: 26px;
+    fill: currentColor;
+    pointer-events: none;
+}
+
+.player-token.serving {
+    transform: scale(1.12);
+    box-shadow:
+        0 0 0 3px rgba(255, 255, 255, 0.55),
+        0 0 18px rgba(255, 255, 255, 0.4);
+}
+
+/* Paddle indicator beside the serving player (always inside the court) */
+.player-token.serving::after {
+    content: '🏓';
+    position: absolute;
+    top: 50%;
+    font-size: 1.3rem;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+    animation: paddleBob 1.4s ease-in-out infinite;
+}
+
+.player-slot[data-screen='sl'] .player-token.serving::after {
+    right: -26px;
+}
+
+.player-slot[data-screen='sr'] .player-token.serving::after {
+    left: -26px;
+}
+
+/* Player name label */
+.player-name {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.92);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    padding: 1px 6px;
+    background: rgba(0, 0, 0, 0.32);
+    border-radius: 4px;
+    max-width: 78px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.player-name-input {
+    font-family: inherit;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: center;
+    width: 78px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 4px;
+    padding: 1px 4px;
+    outline: none;
+}
+
+/* Tap hint badge */
+.tap-hint {
+    position: absolute;
+    z-index: 4;
+    background: rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.85);
+    padding: 4px 10px;
+    border-radius: var(--r-pill);
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+    opacity: 0.55;
+    transition: opacity 200ms;
+}
+
+.court-half-a .tap-hint {
+    top: 10px;
+    right: 14px;
+}
+
+.court-half-b .tap-hint {
+    bottom: 10px;
+    left: 14px;
+}
+
+.court-half:hover .tap-hint,
+.court-half:active .tap-hint {
+    opacity: 1;
+}
+
+/* Inline rename input (court context) */
+.team-name-input {
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-align: center;
+    width: 100px;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 6px;
+    padding: 2px 6px;
+    outline: none;
+    pointer-events: auto;
+}

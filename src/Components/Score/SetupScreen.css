@@ -1,0 +1,138 @@
+#screen-setup {
+    padding: 32px 20px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.app-title {
+    font-size: clamp(2rem, 8vw, 2.8rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: var(--clr-text);
+}
+
+.title-accent {
+    color: var(--clr-primary);
+}
+
+.setup-card {
+    width: 100%;
+    background: var(--clr-surface);
+    border-radius: var(--r-lg);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: var(--shadow);
+}
+
+.field-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--clr-muted);
+    margin-bottom: 8px;
+}
+
+.toggle-group {
+    display: flex;
+    gap: 8px;
+}
+
+.toggle-btn {
+    flex: 1;
+    padding: 12px 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    background: var(--clr-surface-2);
+    color: var(--clr-muted);
+    border: 2px solid var(--clr-border);
+    border-radius: var(--r-md);
+    cursor: pointer;
+    transition: all var(--trans);
+    touch-action: manipulation;
+}
+
+.toggle-btn.active {
+    background: var(--clr-primary);
+    color: var(--clr-on-primary);
+    border-color: var(--clr-primary);
+}
+
+.name-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.name-row + .name-row {
+    margin-top: 10px;
+}
+
+.name-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.name-label.team-a-label {
+    color: var(--clr-team-a);
+}
+
+.name-label.team-b-label {
+    color: var(--clr-team-b);
+}
+
+.name-input {
+    width: 100%;
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    background: var(--clr-surface-2);
+    color: var(--clr-text);
+    border: 2px solid var(--clr-border);
+    border-radius: var(--r-md);
+    outline: none;
+    transition: border-color var(--trans);
+}
+
+.name-input:focus {
+    border-color: var(--clr-primary);
+}
+
+.name-input::placeholder {
+    color: var(--clr-muted);
+    font-weight: 400;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 16px;
+    font-family: inherit;
+    font-size: 1.1rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--clr-primary);
+    color: var(--clr-on-primary);
+    border: none;
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+        transform var(--trans),
+        background var(--trans);
+    box-shadow: var(--shadow-primary);
+}
+
+.btn-primary:active {
+    transform: scale(0.97);
+    background: var(--clr-primary-dk);
+}

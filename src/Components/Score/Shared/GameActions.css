@@ -1,0 +1,36 @@
+#game-actions {
+    display: flex;
+    gap: 10px;
+    padding: 0 16px;
+}
+
+.btn-secondary {
+    flex: 1;
+    padding: 12px 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--clr-surface);
+    color: var(--clr-muted);
+    border: 2px solid var(--clr-border);
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: all var(--trans);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    color: var(--clr-text);
+    border-color: var(--clr-muted);
+}
+
+.btn-secondary:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.btn-secondary:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
