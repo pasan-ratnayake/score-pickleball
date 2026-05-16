@@ -82,6 +82,15 @@ tasks/todo.md                   - current task list
 - **Route components in `Pages/` are thin.** Page-level orchestration only; UI lives in `Components/`.
 - **Commit style follows what's in `git log`** (Conventional-Commits-ish: `feat:`, `chore:`, etc.).
 
+## Wrap-up workflow (standing authorization)
+
+After a piece of work is **successfully completed** (commit landed, relevant tests/typecheck/lint green), do these without re-asking:
+
+1. **Push to `origin`** on the current branch. Never `--force` push without explicit per-task approval.
+2. **Prune git worktrees** that are no longer needed: `git worktree list`, then `git worktree remove <path>` for any abandoned/merged ones. If a worktree has uncommitted changes, surface them first and ask before removing.
+
+If anything fails (push rejected, hook fails, worktree locked), stop and report — do not work around it silently.
+
 ## Domain knowledge / jargon
 
 - **Side-out** — the serving team loses the rally; serve passes to the other team (in doubles, after both partners have served).
