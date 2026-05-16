@@ -13,8 +13,8 @@
 #court-scoreboard {
     position: relative;
     width: calc(100% - 32px);
-    max-width: 340px;
-    aspect-ratio: 5 / 7;
+    max-width: 280px;
+    aspect-ratio: 5 / 11;
     margin: 20px auto 12px;
     background: #1a4a1a;
     border: 3px solid var(--clr-text);
@@ -109,7 +109,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    height: 72%;
+    height: 68%;
     display: flex;
 }
 
@@ -147,7 +147,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    height: 28%;
+    height: 32%;
     background: rgba(78, 205, 196, 0.18);
 }
 

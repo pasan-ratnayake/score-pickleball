@@ -1,7 +1,7 @@
 #court-diagram {
     position: relative;
     width: 200px;
-    height: 360px;
+    height: 440px;
     margin: 16px auto;
     border: 3px solid var(--clr-text);
     border-radius: 4px;
@@ -11,20 +11,20 @@
 
 #court-diagram .nvz-top {
     position: absolute;
-    top: 90px;
+    top: 150px;
     left: 0;
     right: 0;
-    height: 90px;
+    height: 70px;
     background: rgba(78, 205, 196, 0.22);
     border-top: 2px solid var(--clr-team-b);
 }
 
 #court-diagram .nvz-bot {
     position: absolute;
-    top: 180px;
+    top: 220px;
     left: 0;
     right: 0;
-    height: 90px;
+    height: 70px;
     background: rgba(78, 205, 196, 0.22);
     border-bottom: 2px solid var(--clr-team-b);
 }
@@ -45,7 +45,7 @@
     position: absolute;
     left: 50%;
     top: 0;
-    height: 90px;
+    height: 150px;
     width: 0;
     border-left: 2px dashed rgba(255, 255, 255, 0.3);
     transform: translateX(-50%);
@@ -56,7 +56,7 @@
     position: absolute;
     left: 50%;
     bottom: 0;
-    height: 90px;
+    height: 150px;
     width: 0;
     border-left: 2px dashed rgba(255, 255, 255, 0.3);
     transform: translateX(-50%);
@@ -76,14 +76,14 @@
 }
 
 #court-diagram .lbl-baseline-top {
-    top: 4px;
+    top: 6px;
     font-size: 0.55rem;
 }
 #court-diagram .lbl-svc-top {
-    top: 38px;
+    top: 70px;
 }
 #court-diagram .lbl-nvz-top {
-    top: 126px;
+    top: 178px;
     color: var(--clr-team-b);
 }
 #court-diagram .lbl-net {
@@ -92,13 +92,13 @@
     z-index: 2;
 }
 #court-diagram .lbl-nvz-bot {
-    bottom: 126px;
+    bottom: 178px;
     color: var(--clr-team-b);
 }
 #court-diagram .lbl-svc-bot {
-    bottom: 38px;
+    bottom: 70px;
 }
 #court-diagram .lbl-baseline-bot {
-    bottom: 4px;
+    bottom: 6px;
     font-size: 0.55rem;
 }
