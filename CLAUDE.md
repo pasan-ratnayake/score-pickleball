@@ -80,16 +80,14 @@ tasks/todo.md                   - current task list
 - **Imports are auto-sorted** by `eslint-plugin-simple-import-sort`. Don't hand-order them — `npm run lint:fix` will.
 - **Co-locate component CSS:** `Foo.tsx` ships with `Foo.css` in the same folder.
 - **Route components in `Pages/` are thin.** Page-level orchestration only; UI lives in `Components/`.
-- **Commit style follows what's in `git log`** (Conventional-Commits-ish: `feat:`, `chore:`, etc.).
 
-## Wrap-up workflow (standing authorization)
+## Overrides to global Version Control Hygiene
 
-After a piece of work is **successfully completed** (commit landed, relevant tests/typecheck/lint green), do these without re-asking:
+The global rules in `~/.claude/CLAUDE.md` §11 apply, **with these overrides:**
 
-1. **Push to `origin`** on the current branch. Never `--force` push without explicit per-task approval.
-2. **Prune git worktrees** that are no longer needed: `git worktree list`, then `git worktree remove <path>` for any abandoned/merged ones. If a worktree has uncommitted changes, surface them first and ask before removing.
+- **Direct commits to `master` are allowed.** This project doesn't use a PR workflow; the wrap-up push goes to `origin/master` directly.
 
-If anything fails (push rejected, hook fails, worktree locked), stop and report — do not work around it silently.
+Push-on-success and worktree pruning behave as the global rules describe — no project-specific change.
 
 ## Domain knowledge / jargon
 
