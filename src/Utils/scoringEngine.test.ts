@@ -125,9 +125,11 @@ describe('currentServeSide', () => {
 
 describe('sideToScreen', () => {
     it("mirrors team A vs team B because they face each other", () => {
-        expect(sideToScreen('A', 'R')).toBe('sr');
-        expect(sideToScreen('A', 'L')).toBe('sl');
-        expect(sideToScreen('B', 'R')).toBe('sl');
-        expect(sideToScreen('B', 'L')).toBe('sr');
+        // A faces down: their right hand points west → screen-left.
+        // B faces up: their right hand points east → screen-right.
+        expect(sideToScreen('A', 'R')).toBe('sl');
+        expect(sideToScreen('A', 'L')).toBe('sr');
+        expect(sideToScreen('B', 'R')).toBe('sr');
+        expect(sideToScreen('B', 'L')).toBe('sl');
     });
 });

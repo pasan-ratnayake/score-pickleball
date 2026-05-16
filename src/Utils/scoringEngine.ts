@@ -117,15 +117,15 @@ export function currentServeSide(state: GameState): 'R' | 'L' {
 /**
  * Map a player-perspective side ('R' / 'L') to a screen position ('sl' / 'sr').
  *
- * Team A is at the top of the screen facing down → their R is screen-right.
- * Team B is at the bottom facing up → their R is screen-left.
+ * Team A is at the top of the screen facing down → their R is screen-left.
+ * Team B is at the bottom facing up → their R is screen-right.
  */
 export function sideToScreen(team: Team, side: 'R' | 'L'): 'sl' | 'sr' {
     if (team === 'A') {
-        return side === 'R' ? 'sr' : 'sl';
+        return side === 'R' ? 'sl' : 'sr';
     }
 
-    return side === 'R' ? 'sl' : 'sr';
+    return side === 'R' ? 'sr' : 'sl';
 }
 
 export function receivingTeam(state: Pick<GameState, 'serving'>): Team {
