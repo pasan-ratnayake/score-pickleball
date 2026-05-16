@@ -80,7 +80,7 @@ tasks/todo.md                   - current task list
 - **Imports are auto-sorted** by `eslint-plugin-simple-import-sort`. Don't hand-order them — `npm run lint:fix` will.
 - **Co-locate component CSS:** `Foo.tsx` ships with `Foo.css` in the same folder.
 - **Route components in `Pages/` are thin.** Page-level orchestration only; UI lives in `Components/`.
-- **Commit style follows what's in `git log`** (Conventional-Commits-ish: `feat:`, `chore:`, etc.). Do NOT include a `Co-Authored-By` trailer in commit messages.
+- **Commit style follows what's in `git log`** (Conventional-Commits-ish: `feat:`, `chore:`, etc.).
 
 ## Domain knowledge / jargon
 
