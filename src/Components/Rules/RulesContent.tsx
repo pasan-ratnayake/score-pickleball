@@ -214,8 +214,15 @@ export function RulesContent() {
                     played to 15 or 21.
                 </p>
                 <p>
-                    If the score reaches 10-10, play continues until one team leads by 2 — for
-                    example, 12-10 or 15-13. There is no cap on the final score.
+                    This <span className="hl">win-by-2</span> rule means that if the score
+                    reaches 10-10, play continues until one team leads by 2 — for example, 12-10
+                    or 15-13. There is no cap on the final score.
+                </p>
+                <p>
+                    <span className="hl">Serve rotation doesn&apos;t change</span> once you pass
+                    the target score. Side-outs, the two-server doubles rotation, and the server
+                    number all keep working the same way — only the game-ending condition is
+                    affected.
                 </p>
             </article>
         </div>
