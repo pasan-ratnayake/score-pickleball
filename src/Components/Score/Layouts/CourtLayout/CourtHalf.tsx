@@ -42,10 +42,13 @@ export function CourtHalf({ team, onScore, servingScreen, receivingScreen }: Cou
         slotContents[p1ScreenPos].playerIdx = 0;
         slotContents[p2ScreenPos].playerIdx = 1;
     } else {
-        const playerScreenPos = sideToScreen(team, score % 2 === 0 ? 'R' : 'L');
+        // Server uses own score parity; receiver follows the diagonal (receivingScreen).
+        const playerScreenPos =
+            receivingScreen !== null
+                ? receivingScreen
+                : sideToScreen(team, score % 2 === 0 ? 'R' : 'L');
         const otherPos = playerScreenPos === 'sl' ? 'sr' : 'sl';
         slotContents[otherPos].visible = false;
-        // Singles hides the redundant name under the player (team name shows near net).
         slotContents[playerScreenPos].playerIdx = null;
     }
 
