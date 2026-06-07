@@ -11,6 +11,7 @@ import type {
     MatchConfig,
     MatchState,
     Pair,
+    Positions,
     ServeEventKind,
     TeamIdx,
 } from '../Types/Game';
@@ -25,6 +26,7 @@ export function freshState(config: MatchConfig): MatchState {
         score: [0, 0],
         server: 0,
         serverD: { team: 0, number: 2 },
+        serverPlayer: 0,
         positions: [
             [0, 1],
             [0, 1],
@@ -32,6 +34,12 @@ export function freshState(config: MatchConfig): MatchState {
         isFirstService: true,
         event: null,
     };
+}
+
+/** The player who serves first for `team` on a side-out: the one whose current
+ * court matches the team's score parity (right court when even, left when odd). */
+function incomingServer(positions: Positions, score: [number, number], team: TeamIdx): number {
+    return positions[team][score[team] % 2 === 0 ? 0 : 1];
 }
 
 /** Winner team index, or null if the game is still live. */
@@ -54,9 +62,8 @@ export function serverNameOf(state: MatchState): string {
         return (state.names as Pair)[state.server];
     }
     const t = state.serverD.team;
-    const idx = state.positions[t][state.score[t] % 2 === 0 ? 0 : 1];
 
-    return (state.names as DoublesNames)[t][idx];
+    return (state.names as DoublesNames)[t][state.serverPlayer];
 }
 
 /**
@@ -77,7 +84,7 @@ export function award(s: MatchState, winner: TeamIdx): MatchState {
     } else {
         const t = s.serverD.team;
         if (winner === t) {
-            // Serving team scores: keep serving, partners swap courts.
+            // Serving team scores: same player keeps serving, partners swap courts.
             next.score = s.score.map((v, i) => (i === t ? v + 1 : v)) as [number, number];
             next.positions = s.positions.map((tm, ti) =>
                 ti === t ? [tm[1], tm[0]] : tm
@@ -85,14 +92,21 @@ export function award(s: MatchState, winner: TeamIdx): MatchState {
             next.isFirstService = false;
         } else if (s.isFirstService) {
             // 0-0-2 rule: only one player serves before the first side-out.
-            next.serverD = { team: (1 - t) as TeamIdx, number: 1 };
+            const nt = (1 - t) as TeamIdx;
+            next.serverD = { team: nt, number: 1 };
+            next.serverPlayer = incomingServer(next.positions, next.score, nt);
             next.isFirstService = false;
             kind = 'sideout';
         } else if (s.serverD.number === 1) {
+            // Server 1 lost: the partner serves as server 2 (no swap).
             next.serverD = { team: t, number: 2 };
+            next.serverPlayer = 1 - s.serverPlayer;
             kind = 'second';
         } else {
-            next.serverD = { team: (1 - t) as TeamIdx, number: 1 };
+            // Server 2 lost: side-out to the other team's first server.
+            const nt = (1 - t) as TeamIdx;
+            next.serverD = { team: nt, number: 1 };
+            next.serverPlayer = incomingServer(next.positions, next.score, nt);
             kind = 'sideout';
         }
     }

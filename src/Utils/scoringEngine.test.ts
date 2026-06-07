@@ -59,6 +59,7 @@ describe('award — doubles', () => {
     it('starts with the 0-0-2 first-service rule', () => {
         const s = freshState(doublesConfig());
         expect(s.serverD).toEqual({ team: 0, number: 2 });
+        expect(s.serverPlayer).toBe(0);
         expect(s.isFirstService).toBe(true);
     });
 
@@ -79,26 +80,50 @@ describe('award — doubles', () => {
         expect(s.event?.kind).toBe('sideout');
     });
 
-    it('after first service, server 1 loss promotes the partner to server 2', () => {
+    it('server 1 loss hands the serve to the PARTNER as server 2', () => {
         const start: MatchState = {
             ...freshState(doublesConfig()),
             serverD: { team: 1, number: 1 },
+            serverPlayer: 0, // Theo serving
             isFirstService: false,
         };
         const s = award(start, 0);
         expect(s.serverD).toEqual({ team: 1, number: 2 });
+        expect(s.serverPlayer).toBe(1); // the partner, Mara, now serves
         expect(s.event?.kind).toBe('second');
+        expect(s.event?.name).toBe('Mara');
     });
 
     it('after first service, server 2 loss rotates to the opponent server 1', () => {
         const start: MatchState = {
             ...freshState(doublesConfig()),
             serverD: { team: 1, number: 2 },
+            serverPlayer: 1,
             isFirstService: false,
         };
         const s = award(start, 0);
         expect(s.serverD).toEqual({ team: 0, number: 1 });
+        // Incoming server is team 0's right-court player at even score → You (idx 0).
+        expect(s.serverPlayer).toBe(0);
         expect(s.event?.kind).toBe('sideout');
+        expect(s.event?.name).toBe('You');
+    });
+
+    it('each team gets two servers across a full service rotation', () => {
+        // Team 1 serving, server 1 = Theo (idx 0). Walk server1 → server2 → side-out.
+        let s: MatchState = {
+            ...freshState(doublesConfig()),
+            serverD: { team: 1, number: 1 },
+            serverPlayer: 0,
+            isFirstService: false,
+        };
+        expect(serverNameOf(s)).toBe('Theo');
+        s = award(s, 0); // Theo (server 1) loses → Mara serves as server 2
+        expect(serverNameOf(s)).toBe('Mara');
+        expect(s.serverD.number).toBe(2);
+        s = award(s, 0); // Mara (server 2) loses → side-out to team 0
+        expect(s.serverD.team).toBe(0);
+        expect(s.serverD.number).toBe(1);
     });
 });
 
@@ -124,8 +149,7 @@ describe('serverNameOf', () => {
         expect(serverNameOf(freshState(singlesConfig()))).toBe('You');
     });
 
-    it('reads the doubles server by court parity', () => {
-        // Score 0 → right-court index (positions[team][0]) → player 0.
+    it('reads the doubles server from serverPlayer', () => {
         expect(serverNameOf(freshState(doublesConfig()))).toBe('You');
     });
 });

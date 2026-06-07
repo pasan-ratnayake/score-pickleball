@@ -61,6 +61,10 @@ export interface MatchState {
     server: TeamIdx;
     /** Doubles server. */
     serverD: DoublesServer;
+    /** Doubles: index (0|1) of the player on `serverD.team` currently serving.
+     * Tracked explicitly because server 1 vs 2 share the same score/positions —
+     * only the serving player differs (the partner takes over as server 2). */
+    serverPlayer: number;
     /** Doubles court positions per team: [rightCourtIdx, leftCourtIdx]. */
     positions: Positions;
     /** True until the first side-out (the 0-0-2 first-service rule). */

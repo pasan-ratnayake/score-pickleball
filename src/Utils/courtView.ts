@@ -24,6 +24,8 @@ export interface CourtView {
     server: TeamIdx;
     /** Doubles server. */
     serverD: DoublesServer;
+    /** Doubles: index (0|1) of the player on `serverD.team` currently serving. */
+    serverPlayer: number;
     /** Doubles court positions per team: [rightCourtIdx, leftCourtIdx]. */
     positions: Positions;
     servingSide: Court;
@@ -66,12 +68,12 @@ export interface Slot {
 export function teamRow(m: CourtView, team: TeamIdx, mirrorTop = true): [Slot, Slot] {
     const [rIdx, lIdx] = m.positions[team];
     const names = (m.names as DoublesNames)[team];
-    const isServ = (court: Court): boolean => m.serverD.team === team && m.servingSide === court;
+    const isServ = (idx: number): boolean => m.serverD.team === team && idx === m.serverPlayer;
     const slot = (idx: number, court: Court): Slot => ({
         name: names[idx],
         idx,
         court,
-        isServer: isServ(court),
+        isServer: isServ(idx),
     });
     if (team === 0 || !mirrorTop) return [slot(lIdx, 'left'), slot(rIdx, 'right')];
 

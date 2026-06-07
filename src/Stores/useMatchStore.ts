@@ -159,8 +159,9 @@ export function useMatchView(): MatchView | null {
             servingPlayerName = (state.names as Pair)[state.server];
         } else {
             const t = state.serverD.team;
-            servingSide = state.score[t] % 2 === 0 ? 'right' : 'left';
-            servingPlayerIdx = state.positions[t][state.score[t] % 2 === 0 ? 0 : 1];
+            servingPlayerIdx = state.serverPlayer;
+            // The serving player's side is whichever court they currently occupy.
+            servingSide = state.positions[t][0] === state.serverPlayer ? 'right' : 'left';
             servingPlayerName = (state.names as DoublesNames)[t][servingPlayerIdx];
         }
 
@@ -170,6 +171,7 @@ export function useMatchView(): MatchView | null {
             score: state.score,
             server: state.server,
             serverD: state.serverD,
+            serverPlayer: state.serverPlayer,
             positions: state.positions,
             servingSide,
             servingPlayerIdx,
