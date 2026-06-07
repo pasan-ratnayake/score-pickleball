@@ -54,13 +54,13 @@ function ServeDiagram() {
             </svg>
             <div>
                 <div style={{ fontFamily: T.display, fontWeight: 800, fontSize: 15, color: T.ink, marginBottom: 5 }}>
-                    Always serve cross-court
+                    Always serve cross-court (diagonally)
                 </div>
                 <div style={{ fontFamily: T.body, fontSize: 13, color: T.muted, lineHeight: 1.45, fontWeight: 500 }}>
                     The serve always travels <b style={{ color: T.ink }}>diagonally</b>, clearing the kitchen into the box
-                    across from you. The server stands <b style={{ color: T.ink }}>right</b> when the score is even,{' '}
-                    <b style={{ color: T.ink }}>left</b> when it&apos;s odd — but in doubles the second server is the
-                    partner, so they serve from the <b style={{ color: T.ink }}>opposite</b> side.
+                    across from you. In <b style={{ color: T.ink }}>singles</b>, serve from the right on even scores and
+                    the left on odd. In <b style={{ color: T.ink }}>doubles</b>, server 1 is whoever is standing in the{' '}
+                    <b style={{ color: T.ink }}>right service court</b> when the team wins back the serve.
                 </div>
             </div>
         </div>
@@ -187,7 +187,9 @@ const UNIVERSAL: Rule[] = [
         body: (
             <>
                 The 7-foot zone at the net is the <b>non-volley zone</b>. You can&apos;t volley while standing in it or
-                on its line — step in only to play a ball that has already bounced.
+                on its line — and it&apos;s still a fault if your <b>momentum</b> from a volley carries you (or anything
+                you&apos;re wearing or holding) into the kitchen or onto the line, even after the ball is gone. Step in
+                only to play a ball that has already bounced.
             </>
         ),
     },
@@ -195,8 +197,9 @@ const UNIVERSAL: Rule[] = [
         title: 'Faults',
         body: (
             <>
-                A rally ends on a fault: the ball lands <b>out</b>, hits the <b>net</b>, is{' '}
-                <b>volleyed from the kitchen</b>, or breaks the two-bounce rule.
+                A rally ends on a fault: the ball is hit <b>out</b> or <b>into the net</b> (a ball that nicks the net but
+                still lands in is good — play on), it&apos;s <b>volleyed from the kitchen</b>, or it breaks the
+                two-bounce rule.
             </>
         ),
     },
@@ -252,12 +255,12 @@ const DOUBLES: Rule[] = [
         ),
     },
     {
-        title: 'Even/odd, with a twist',
+        title: 'Who serves first',
         body: (
             <>
-                The team&apos;s score sets the side for <b>server 1</b> (right when even, left when odd). Because server 2
-                doesn&apos;t swap in, they serve from the <b>opposite</b> side at that same score — so in doubles the
-                even/odd rule isn&apos;t a fixed per-player thing.
+                When your team wins back the serve, <b>server 1 is whoever is standing in the right service court</b>.
+                Partners only swap sides when they score, so the score tells you who that is. Server 2 is then the
+                partner, serving from the left.
             </>
         ),
     },
