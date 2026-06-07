@@ -60,6 +60,7 @@ Verified in-browser (screenshots now work): theme-by-style across Court/Neon/Gla
 
 ## Recently completed
 
+- **Rules content**: restored important info the compact rewrite dropped (court zones/dimensions, 15/21 game options, win-by-2 no-cap) and added serve-validity rules — a net-cord serve that lands in the correct box is good, while landing in the kitchen or on the kitchen line is a fault (other service lines are in). New `The court` and `Net serves & the line` items in `Rules.tsx`.
 - **Doubles second-server bugfix**: each team now gets two servers — on a service change the **partner** serves as server 2 (was incorrectly keeping the same player). Added an explicit `serverPlayer` to the match state; `award` flips it to the partner on the `second` event and recomputes it by court parity for the incoming team on a side-out (0-0-2 opening kept as a single server). The serve-change banner now reads "Second serve · <partner name>". Engine test added (15/15). See `tasks/lessons.md`.
 
 - **HTML → React port** (branch `claude/wizardly-wing-989c14`): single-file `legacy/index.html` ported to a Vite + React 19 + TS + Tailwind v4 app. Pluggable layout structure under `src/Components/Score/Layouts/`. Pure scoring engine + Zustand stores + snapshot undo. react-query/ky provisioned for a future backend. Verified: typecheck, lint, 13/13 unit tests, browser smoke test (setup → start game → record point → undo → rules page → theme toggle, no console errors).

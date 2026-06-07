@@ -137,8 +137,18 @@ const UNIVERSAL: Rule[] = [
         title: 'The basics',
         body: (
             <>
-                Games go to <b>11</b> and you must <b>win by 2</b>. Only the side that&apos;s serving can score — win a
-                rally on your serve and you take the point.
+                Games go to <b>11</b> (sometimes <b>15</b> or <b>21</b>) and you must <b>win by 2</b> — there&apos;s no
+                cap, so 10–10 plays on until a side leads by two. Only the side that&apos;s serving can score: win a
+                rally on the return and you take the serve, not a point.
+            </>
+        ),
+    },
+    {
+        title: 'The court',
+        body: (
+            <>
+                The court is <b>44 × 20 ft</b>. The 7-foot strip on each side of the net is the <b>kitchen</b> (the
+                non-volley zone); behind it a centre line splits each side into two <b>service boxes</b>.
             </>
         ),
     },
@@ -148,6 +158,17 @@ const UNIVERSAL: Rule[] = [
             <>
                 Serve <b>underhand</b>, striking the ball below your waist. The serve travels diagonally and must land
                 past the kitchen in the service box across from you.
+            </>
+        ),
+    },
+    {
+        title: 'Net serves & the line',
+        body: (
+            <>
+                A serve that <b>clips the net</b> and still lands in the correct service box is <b>good</b> — play on,
+                there&apos;s no replay. But the serve must clear the kitchen: landing in the non-volley zone{' '}
+                <b>or on the kitchen line</b> is a fault. That kitchen line is the only service-box line that
+                doesn&apos;t count — landing on any other line (sideline, baseline or centre) is in.
             </>
         ),
     },
