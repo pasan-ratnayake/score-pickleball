@@ -6,14 +6,14 @@
 
 ## What this project does
 
-A browser-based pickleball scorekeeper. Tracks singles/doubles scores, server position, side-out logic, and game-win conditions, with an animated court layout and a rules reference page. Originally a single-file HTML app (preserved at `legacy/index.html`); now a React + TypeScript SPA designed so additional score-display layouts can be plugged in alongside the current court view.
+A browser-based pickleball scorekeeper ("Dink"). Tracks singles/doubles scores, server position, side-out logic, and game-win conditions on a court-shaped animated scoreboard. Mobile-first single-flow app: Home → New Match → live court → Match Complete → History, plus Settings (4 accent themes × 5 court "skins"). A standalone Rules reference page is kept as an extra. Originally a single-file HTML app (preserved at `legacy/index.html`), first ported to a generic React SPA, then redesigned to the current "Dink" app from a Claude Design handoff.
 
 ## Tech stack
 
 - **Language:** TypeScript 5.9, React 19
 - **Build:** Vite 7
 - **Styling:** Tailwind v4 (via `@tailwindcss/vite`) + CSS variables for theme tokens
-- **State:** Zustand 5 (`useGameStore`, `useThemeStore`)
+- **State:** Zustand 5 — `useMatchStore` (live match + snapshot undo), `useSettingsStore` (persisted accent/skin/defaults), `useHistoryStore` (persisted match history + player roster), `useThemeStore` (light/dark, only for the Rules page)
 - **Routing:** react-router 7
 - **Data:** `@tanstack/react-query` + `ky` are installed and wired up but unused — provisioned for a future backend
 - **Testing:** Vitest 4 + Testing Library + jsdom
@@ -45,41 +45,47 @@ npm run build
 
 ```
 src/
-  App.tsx                       - routes (/score, /rules, redirect /, 404)
-  main.tsx                      - entry, react-query provider
+  App.tsx                       - routes ("/" → Dink app, "/rules", 404)
+  main.tsx                      - entry, react-query provider, BrowserRouter
   Components/
-    Layout.tsx                  - app shell, tab bar, theme toggle
-    Score/
-      SetupScreen.tsx           - format / play-to / player names
-      Layouts/                  - pluggable in-game layouts (CourtLayout is first)
-      Shared/                   - ServeBar, GameActions, ScoreLog, WinOverlay, InlineEdit
-    Rules/                      - RulesContent, CourtDiagram
-  Pages/                        - Score, Rules, NotFound (thin route components)
-  Stores/                       - useGameStore (+ undo history), useThemeStore (persisted)
+    Dink/                       - the whole Dink app (token-driven inline styles)
+      DinkApp.tsx               - shell: screen state, accent theming, lifecycle
+      theme.ts                  - tokens: T, PALETTES (accents), SPEEDS, fonts
+      skins.ts                  - the 5 court-style token maps + SKIN_ORDER
+      dink.css                  - global keyframes + .dink-btn/.ex-edit-name rules
+      Atoms.tsx / UiKit.tsx / Autocomplete.tsx   - shared UI kit + frame
+      anim.tsx                  - FLIP, +1 pips, ripple, announce banner, paddle token
+      Scoreboard.tsx / Overlays.tsx              - the court board + win/confirm
+      Screens/                  - Home, Setup, Play, Complete, History, Settings, MatchRow
+    Rules/                      - RulesContent, CourtDiagram (kept as an extra)
+  Pages/                        - Rules, NotFound (thin route components)
+  Stores/                       - useMatchStore, useSettingsStore, useHistoryStore, useThemeStore
   Hooks/                        - useApplyTheme, useDocumentTitle
   Utils/
-    scoringEngine.ts            - pure scoring logic
+    scoringEngine.ts            - pure match engine (freshState/award/winnerOf)
     scoringEngine.test.ts       - unit tests
-    scoreLog.ts                 - log-entry helpers
-  Types/Game.ts                 - game state types
+    courtView.ts                - pure callout/court-placement view helpers
+    roster.ts                   - pure player-catalogue helpers (autocomplete)
+  Types/Game.ts                 - match model + record/roster/skin/accent types
 legacy/index.html               - original single-file app, kept for reference
 tasks/todo.md                   - current task list
 ```
 
 ## Architectural decisions
 
-- **Scoring is a pure function.** All score transitions go through `src/Utils/scoringEngine.ts`. Components and stores never mutate score state directly — they call the engine and store the result. Tests live next to it (`scoringEngine.test.ts`) and must stay green.
-- **Undo is snapshot-based.** `useGameStore` pushes a snapshot of the prior state onto a history stack on every recorded point. Undo pops and replaces. Don't build incremental inverse-operations — keep using snapshots.
-- **Layouts are pluggable.** The in-game UI is selected from `src/Components/Score/Layouts/`. To add a new one: create `Layouts/<Name>/<Name>.tsx` + `.css`, compose shared widgets from `Score/Shared/`, read state via `useGameStore`, and switch which layout `Pages/Score.tsx` renders. A layout store will eventually pick this; for now `Score.tsx` hardcodes the choice.
-- **Theme via CSS variables, not Tailwind tokens.** Dark/light tokens are defined as CSS variables and toggled by `useApplyTheme` + `useThemeStore` (persisted). Don't replace these with Tailwind's `dark:` variants — the existing tokens are pixel-faithful to the legacy app and a drift risk.
+- **Scoring is a pure function.** All score transitions go through `src/Utils/scoringEngine.ts` (`freshState`/`award`/`winnerOf`) — no `Date`, no `localStorage`, no mutation. `useMatchStore` calls it and stores the result; `courtView.ts` derives the display (callouts, court placement) purely. Tests live next to the engine (`scoringEngine.test.ts`) and must stay green.
+- **Undo is snapshot-based.** `useMatchStore` pushes a snapshot of the prior state onto a history stack on every awarded point. Undo pops and replaces. Don't build incremental inverse-operations — keep using snapshots.
+- **Skins are token maps, not separate components.** One `Scoreboard` renders all five court styles by reading a skin's token object from `skins.ts`. To add a style: add an entry to `SKINS` + `SKIN_ORDER` and a `SkinId` in `Types/Game.ts` — do **not** fork the component. Accents (`PALETTES` in `theme.ts`) drive a live `--accent` CSS var set by `DinkApp`.
+- **Dink styling is token-driven inline styles, not co-located CSS.** Because one component must render 5 skins pixel-faithfully, the Dink components use inline `style` objects fed by `theme.ts`/`skins.ts` tokens. `dink.css` holds only global keyframes and pseudo-class rules. Don't try to convert these to per-component CSS files — it fights the skin system. (The Rules page still uses co-located CSS — see below.)
+- **Theme via CSS variables.** The Dink app sets `--accent`/`--accent-ink` from the chosen palette. The Rules page (kept as an extra) still uses the legacy light/dark CSS-variable tokens toggled by `useApplyTheme` + `useThemeStore`; that system no longer affects the Dink app. Don't replace either with Tailwind's `dark:` variants.
 - **react-query is wired but unused.** The provider is mounted in `main.tsx` and `ky` is installed in preparation for a backend. There is no `Services/` folder yet — add one (with ky-based clients) when API calls land. Don't introduce a different data layer.
 - **Folder casing is PascalCase.** `Components/`, `Stores/`, `Utils/`, etc. Match this when adding directories.
 
 ## Conventions specific to this project
 
 - **Imports are auto-sorted** by `eslint-plugin-simple-import-sort`. Don't hand-order them — `npm run lint:fix` will.
-- **Co-locate component CSS:** `Foo.tsx` ships with `Foo.css` in the same folder.
-- **Route components in `Pages/` are thin.** Page-level orchestration only; UI lives in `Components/`.
+- **Co-locate component CSS for non-Dink components:** `Foo.tsx` ships with `Foo.css` (e.g. the Rules components). Dink components are the exception — they use token-driven inline styles (see Architectural decisions).
+- **Route components in `Pages/` are thin.** Page-level orchestration only; UI lives in `Components/`. The Dink app manages its own internal screens via state in `DinkApp.tsx` (no router per screen).
 
 ## Overrides to global Version Control Hygiene
 
@@ -104,9 +110,8 @@ Push-on-success and worktree pruning behave as the global rules describe — no 
 
 ## Current focus
 
-Per `tasks/todo.md`, the HTML→React port is complete. Next likely work:
-- Additional score layouts under `Components/Score/Layouts/`
-- A layout-selection store/setting
+Per `tasks/todo.md`, the "Dink" redesign (Claude Design handoff) is complete. Next likely work:
+- Additional court skins (add to `SKINS`/`SKIN_ORDER` + a `SkinId`)
 - Backend integration (will introduce `src/Services/` with ky clients)
 
 ## Related files

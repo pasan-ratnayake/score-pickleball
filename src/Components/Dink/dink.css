@@ -1,0 +1,123 @@
+/* dink.css — global keyframes + pseudo-state rules for the Dink app.
+ * (The component styling itself is token-driven inline styles, so the same
+ * components render all five skins. Fonts are loaded in index.html.) */
+
+/* Editable name inputs (shared across setup + scoreboard). */
+input.ex-edit-name:hover {
+    border-color: rgba(128, 128, 128, 0.45) !important;
+}
+input.ex-edit-name:focus {
+    border-color: var(--accent) !important;
+    background: #fff !important;
+    color: #14181a !important;
+    -webkit-text-fill-color: #14181a !important;
+}
+
+/* Pressable buttons. */
+.dink-btn {
+    transition:
+        transform 0.12s ease,
+        filter 0.15s ease,
+        box-shadow 0.12s ease;
+}
+.dink-btn:active {
+    transform: translateY(3px);
+    filter: brightness(0.98);
+    box-shadow: none !important;
+}
+
+/* Score-page micro-animations. */
+@keyframes fxRipple {
+    from {
+        opacity: 0.45;
+        transform: scale(0.22);
+    }
+    to {
+        opacity: 0;
+        transform: scale(1);
+    }
+}
+@keyframes fxPipUp {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 6px) scale(0.7);
+    }
+    18% {
+        opacity: 1;
+        transform: translate(-50%, -6px) scale(1.06);
+    }
+    60% {
+        opacity: 1;
+        transform: translate(-50%, -30px) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -58px) scale(0.95);
+    }
+}
+@keyframes fxNumPop {
+    0% {
+        transform: scale(0.72);
+    }
+    55% {
+        transform: scale(1.09);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Announcement banner — full in→hold→out lifecycle in one shot. */
+@keyframes fxAnnounce {
+    0% {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.9);
+    }
+    9% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    15% {
+        transform: translateY(2px) scale(1.02);
+    }
+    22% {
+        transform: translateY(0) scale(1);
+    }
+    80% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.97);
+    }
+}
+
+/* App transitions — transform-only so content stays visible if motion can't play. */
+@keyframes screenIn {
+    from {
+        transform: translateY(12px);
+    }
+    to {
+        transform: none;
+    }
+}
+@keyframes dinkPop {
+    0% {
+        transform: scale(0.7);
+    }
+    60% {
+        transform: scale(1.08);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-fxnum],
+    .dink-screen,
+    .dink-btn {
+        animation: none !important;
+    }
+}
