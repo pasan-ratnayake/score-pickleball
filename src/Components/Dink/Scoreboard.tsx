@@ -78,7 +78,7 @@ export function Scoreboard({ m, skin, onExit, onNewMatch, onFinish, flipMs = 460
         const ev = m.event;
         if (!ev || ev.kind === 'point' || ev.over) return;
         if (ev.kind === 'second')
-            announce.show({ title: 'Service change', body: 'Second server', team: ev.team });
+            announce.show({ title: 'Service change', body: `Second serve · ${ev.name}`, team: ev.team });
         else announce.show({ title: 'Side out', body: `${ev.name} serves`, team: ev.team });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [evSeq]);

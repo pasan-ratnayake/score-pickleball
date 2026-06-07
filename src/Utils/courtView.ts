@@ -108,7 +108,7 @@ export interface AnnounceCopy {
 
 export function announceFromEvent(ev: ServeEvent | null): AnnounceCopy | null {
     if (!ev || ev.kind === 'point' || ev.over) return null;
-    if (ev.kind === 'second') return { title: 'Service change', body: 'Second server', team: ev.team };
+    if (ev.kind === 'second') return { title: 'Service change', body: `Second serve · ${ev.name}`, team: ev.team };
 
     return { title: 'Side out', body: `${ev.name} serves`, team: ev.team };
 }
