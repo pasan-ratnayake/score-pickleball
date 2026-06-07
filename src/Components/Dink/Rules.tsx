@@ -57,9 +57,10 @@ function ServeDiagram() {
                     Always serve cross-court
                 </div>
                 <div style={{ fontFamily: T.body, fontSize: 13, color: T.muted, lineHeight: 1.45, fontWeight: 500 }}>
-                    Stand to the <b style={{ color: T.ink }}>right</b> when your score is even, the
-                    <b style={{ color: T.ink }}> left</b> when it&apos;s odd. The serve must clear the kitchen and land in
-                    the box diagonally across.
+                    The serve always travels <b style={{ color: T.ink }}>diagonally</b>, clearing the kitchen into the box
+                    across from you. The server stands <b style={{ color: T.ink }}>right</b> when the score is even,{' '}
+                    <b style={{ color: T.ink }}>left</b> when it&apos;s odd — but in doubles the second server is the
+                    partner, so they serve from the <b style={{ color: T.ink }}>opposite</b> side.
                 </div>
             </div>
         </div>
@@ -245,7 +246,18 @@ const DOUBLES: Rule[] = [
         body: (
             <>
                 Win a rally on serve and the two partners <b>swap sides</b>; the same player serves again. Lose it and
-                your partner serves (server 2). Lose again — side-out.
+                your partner serves next (server 2) — <b>from the other side</b>, since you don&apos;t swap on a service
+                change. Lose again — side-out.
+            </>
+        ),
+    },
+    {
+        title: 'Even/odd, with a twist',
+        body: (
+            <>
+                The team&apos;s score sets the side for <b>server 1</b> (right when even, left when odd). Because server 2
+                doesn&apos;t swap in, they serve from the <b>opposite</b> side at that same score — so in doubles the
+                even/odd rule isn&apos;t a fixed per-player thing.
             </>
         ),
     },
