@@ -1,0 +1,199 @@
+/* dink.css — global keyframes + pseudo-state rules for the Dink app.
+ * (The component styling itself is token-driven inline styles, so the same
+ * components render all five skins. Fonts are loaded in index.html.) */
+
+/* ── Responsive app shell ───────────────────────────────────────────────
+ * Mobile: the app fills the viewport (the mockup). Tablet: a centered elevated
+ * card. Desktop: a themed brand rail beside the app surface, on an accent-glow
+ * backdrop. */
+.dink-frame {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--app-frame, #dbddd7);
+    transition: background 0.3s ease;
+}
+.dink-shell {
+    position: relative;
+    display: flex;
+}
+.dink-rail {
+    display: none;
+}
+.dink-stage {
+    position: relative;
+    overflow: hidden;
+    width: 100vw;
+    height: 100dvh;
+}
+
+@media (min-width: 768px) {
+    .dink-frame::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(
+            60% 50% at 28% 16%,
+            color-mix(in oklab, var(--accent, #2e7d52) 20%, transparent),
+            transparent 70%
+        );
+    }
+    .dink-shell {
+        z-index: 1;
+        border-radius: 30px;
+        overflow: hidden;
+        height: min(92dvh, 880px);
+        box-shadow:
+            0 30px 80px rgba(0, 0, 0, 0.28),
+            0 1px 0 rgba(255, 255, 255, 0.05) inset;
+    }
+    .dink-stage {
+        width: min(92vw, 440px);
+        height: 100%;
+    }
+}
+
+@media (min-width: 1024px) {
+    .dink-rail {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 340px;
+        padding: 46px 40px;
+        background: var(--app-card, #fff);
+        border-right: 1px solid var(--app-line, rgba(20, 24, 26, 0.1));
+        backdrop-filter: var(--app-card-blur, none);
+        -webkit-backdrop-filter: var(--app-card-blur, none);
+    }
+    .dink-stage {
+        width: 452px;
+    }
+    /* The brand rail carries the hero on desktop — avoid duplicating it on Home. */
+    .dink-home-hero {
+        display: none;
+    }
+}
+
+/* Editable name inputs (shared across setup + scoreboard). */
+input.ex-edit-name:hover {
+    border-color: rgba(128, 128, 128, 0.45) !important;
+}
+input.ex-edit-name:focus {
+    border-color: var(--accent) !important;
+    background: #fff !important;
+    color: #14181a !important;
+    -webkit-text-fill-color: #14181a !important;
+}
+
+/* Pressable buttons. */
+.dink-btn {
+    transition:
+        transform 0.12s ease,
+        filter 0.15s ease,
+        box-shadow 0.12s ease;
+}
+.dink-btn:active {
+    transform: translateY(3px);
+    filter: brightness(0.98);
+    box-shadow: none !important;
+}
+
+/* Score-page micro-animations. */
+@keyframes fxRipple {
+    from {
+        opacity: 0.45;
+        transform: scale(0.22);
+    }
+    to {
+        opacity: 0;
+        transform: scale(1);
+    }
+}
+@keyframes fxPipUp {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 6px) scale(0.7);
+    }
+    18% {
+        opacity: 1;
+        transform: translate(-50%, -6px) scale(1.06);
+    }
+    60% {
+        opacity: 1;
+        transform: translate(-50%, -30px) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -58px) scale(0.95);
+    }
+}
+@keyframes fxNumPop {
+    0% {
+        transform: scale(0.72);
+    }
+    55% {
+        transform: scale(1.09);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Announcement banner — full in→hold→out lifecycle in one shot. */
+@keyframes fxAnnounce {
+    0% {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.9);
+    }
+    9% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    15% {
+        transform: translateY(2px) scale(1.02);
+    }
+    22% {
+        transform: translateY(0) scale(1);
+    }
+    80% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.97);
+    }
+}
+
+/* App transitions — transform-only so content stays visible if motion can't play. */
+@keyframes screenIn {
+    from {
+        transform: translateY(12px);
+    }
+    to {
+        transform: none;
+    }
+}
+@keyframes dinkPop {
+    0% {
+        transform: scale(0.7);
+    }
+    60% {
+        transform: scale(1.08);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-fxnum],
+    .dink-screen,
+    .dink-btn {
+        animation: none !important;
+    }
+}

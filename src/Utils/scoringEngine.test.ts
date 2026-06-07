@@ -1,135 +1,155 @@
 import { describe, expect, it } from 'vitest';
 
-import type { GameState } from '../Types/Game';
-import { applyRally, currentServeSide, sideToScreen } from './scoringEngine';
+import type { DoublesNames, MatchConfig, MatchState, Pair } from '../Types/Game';
+import { award, freshState, serverNameOf, winnerOf } from './scoringEngine';
 
-const baseDoubles = (): GameState => ({
-    phase: 'playing',
-    format: 'doubles',
-    playTo: 11,
-    names: { A: 'Team A', B: 'Team B' },
-    playerNames: { A: ['', ''], B: ['', ''] },
-    scores: { A: 0, B: 0 },
-    serving: 'A',
-    serverNum: 2, // doubles start with server 2 (one-serve rule)
-    serveSide: 'R',
-    isFirstServe: true,
-    winner: null,
+const singlesConfig = (over: Partial<MatchConfig> = {}): MatchConfig => ({
+    mode: 'singles',
+    names: ['You', 'Riley'] as Pair,
+    target: 11,
+    winByTwo: true,
+    ...over,
 });
 
-const baseSingles = (): GameState => ({
-    ...baseDoubles(),
-    format: 'singles',
-    serverNum: 1,
-    isFirstServe: false,
+const doublesConfig = (over: Partial<MatchConfig> = {}): MatchConfig => ({
+    mode: 'doubles',
+    names: [
+        ['You', 'Sam'],
+        ['Theo', 'Mara'],
+    ] as DoublesNames,
+    target: 11,
+    winByTwo: true,
+    ...over,
 });
 
-describe('applyRally — doubles', () => {
-    it('serving team scoring keeps the serve and switches the server side', () => {
-        const s1 = applyRally(baseDoubles(), 'A');
-        expect(s1.scores).toEqual({ A: 1, B: 0 });
-        expect(s1.serving).toBe('A');
-        expect(s1.serverNum).toBe(2);
-        expect(s1.serveSide).toBe('L');
-        expect(s1.isFirstServe).toBe(false);
+describe('winnerOf', () => {
+    it('returns null below target', () => {
+        expect(winnerOf([10, 8], 11, true)).toBeNull();
     });
 
-    it('first-serve loss skips server 2 and hands directly to the other team', () => {
-        const s = applyRally(baseDoubles(), 'B');
-        expect(s.scores).toEqual({ A: 0, B: 0 });
-        expect(s.serving).toBe('B');
-        expect(s.serverNum).toBe(1);
-        expect(s.serveSide).toBe('R');
-        expect(s.isFirstServe).toBe(false);
+    it('requires a 2-point lead when winByTwo', () => {
+        expect(winnerOf([11, 10], 11, true)).toBeNull();
+        expect(winnerOf([12, 10], 11, true)).toBe(0);
+        expect(winnerOf([10, 12], 11, true)).toBe(1);
     });
 
-    it('after first serve, server 1 loss promotes partner to server 2', () => {
-        // Set up: B is serving as S1 (e.g. after first-serve loss), then loses a rally.
-        const s: GameState = { ...baseDoubles(), serving: 'B', serverNum: 1, serveSide: 'R', isFirstServe: false };
-        const s2 = applyRally(s, 'A');
-        expect(s2.serving).toBe('B');
-        expect(s2.serverNum).toBe(2);
-        expect(s2.serveSide).toBe('L');
-        expect(s2.scores).toEqual({ A: 0, B: 0 });
-    });
-
-    it('after first serve, server 2 loss rotates to opponent server 1', () => {
-        const s: GameState = { ...baseDoubles(), serving: 'B', serverNum: 2, serveSide: 'L', isFirstServe: false };
-        const s2 = applyRally(s, 'A');
-        expect(s2.serving).toBe('A');
-        expect(s2.serverNum).toBe(1);
-        expect(s2.serveSide).toBe('R');
+    it('ignores the 2-point rule when winByTwo is off', () => {
+        expect(winnerOf([11, 10], 11, false)).toBe(0);
     });
 });
 
-describe('applyRally — singles', () => {
-    it('server scoring increments score and keeps serve', () => {
-        const s = applyRally(baseSingles(), 'A');
-        expect(s.scores).toEqual({ A: 1, B: 0 });
-        expect(s.serving).toBe('A');
+describe('award — singles', () => {
+    it('server scoring increments and keeps the serve', () => {
+        const s = award(freshState(singlesConfig()), 0);
+        expect(s.score).toEqual([1, 0]);
+        expect(s.server).toBe(0);
+        expect(s.event?.kind).toBe('point');
     });
 
-    it('server losing the rally hands serve to opponent without scoring', () => {
-        const s = applyRally(baseSingles(), 'B');
-        expect(s.scores).toEqual({ A: 0, B: 0 });
-        expect(s.serving).toBe('B');
-    });
-});
-
-describe('applyRally — win detection', () => {
-    it('reaches winner when leading by 2 at playTo', () => {
-        const s: GameState = { ...baseDoubles(), scores: { A: 10, B: 5 }, isFirstServe: false };
-        const s2 = applyRally(s, 'A');
-        expect(s2.scores.A).toBe(11);
-        expect(s2.winner).toBe('A');
-        expect(s2.phase).toBe('ended');
-    });
-
-    it('does not declare a winner at 11–10 (must win by 2)', () => {
-        const s: GameState = { ...baseDoubles(), scores: { A: 10, B: 10 }, isFirstServe: false };
-        const s2 = applyRally(s, 'A');
-        expect(s2.scores.A).toBe(11);
-        expect(s2.winner).toBeNull();
-        expect(s2.phase).toBe('playing');
-    });
-
-    it('declares a winner at 12–10', () => {
-        const s: GameState = { ...baseDoubles(), scores: { A: 11, B: 10 }, isFirstServe: false };
-        const s2 = applyRally(s, 'A');
-        expect(s2.scores.A).toBe(12);
-        expect(s2.winner).toBe('A');
+    it('server losing hands the serve over without scoring (side-out)', () => {
+        const s = award(freshState(singlesConfig()), 1);
+        expect(s.score).toEqual([0, 0]);
+        expect(s.server).toBe(1);
+        expect(s.event?.kind).toBe('sideout');
+        expect(s.event?.name).toBe('Riley');
     });
 });
 
-describe('applyRally — guards', () => {
-    it('returns the same state when phase is not playing', () => {
-        const s: GameState = { ...baseDoubles(), phase: 'ended', winner: 'A' };
-        const s2 = applyRally(s, 'B');
-        expect(s2).toBe(s);
+describe('award — doubles', () => {
+    it('starts with the 0-0-2 first-service rule', () => {
+        const s = freshState(doublesConfig());
+        expect(s.serverD).toEqual({ team: 0, number: 2 });
+        expect(s.serverPlayer).toBe(0);
+        expect(s.isFirstService).toBe(true);
+    });
+
+    it('serving team scoring keeps the serve and swaps that team positions', () => {
+        const s = award(freshState(doublesConfig()), 0);
+        expect(s.score).toEqual([1, 0]);
+        expect(s.serverD).toEqual({ team: 0, number: 2 });
+        expect(s.positions[0]).toEqual([1, 0]);
+        expect(s.isFirstService).toBe(false);
+        expect(s.event?.kind).toBe('point');
+    });
+
+    it('first-service loss hands directly to the other team server 1', () => {
+        const s = award(freshState(doublesConfig()), 1);
+        expect(s.score).toEqual([0, 0]);
+        expect(s.serverD).toEqual({ team: 1, number: 1 });
+        expect(s.isFirstService).toBe(false);
+        expect(s.event?.kind).toBe('sideout');
+    });
+
+    it('server 1 loss hands the serve to the PARTNER as server 2', () => {
+        const start: MatchState = {
+            ...freshState(doublesConfig()),
+            serverD: { team: 1, number: 1 },
+            serverPlayer: 0, // Theo serving
+            isFirstService: false,
+        };
+        const s = award(start, 0);
+        expect(s.serverD).toEqual({ team: 1, number: 2 });
+        expect(s.serverPlayer).toBe(1); // the partner, Mara, now serves
+        expect(s.event?.kind).toBe('second');
+        expect(s.event?.name).toBe('Mara');
+    });
+
+    it('after first service, server 2 loss rotates to the opponent server 1', () => {
+        const start: MatchState = {
+            ...freshState(doublesConfig()),
+            serverD: { team: 1, number: 2 },
+            serverPlayer: 1,
+            isFirstService: false,
+        };
+        const s = award(start, 0);
+        expect(s.serverD).toEqual({ team: 0, number: 1 });
+        // Incoming server is team 0's right-court player at even score → You (idx 0).
+        expect(s.serverPlayer).toBe(0);
+        expect(s.event?.kind).toBe('sideout');
+        expect(s.event?.name).toBe('You');
+    });
+
+    it('each team gets two servers across a full service rotation', () => {
+        // Team 1 serving, server 1 = Theo (idx 0). Walk server1 → server2 → side-out.
+        let s: MatchState = {
+            ...freshState(doublesConfig()),
+            serverD: { team: 1, number: 1 },
+            serverPlayer: 0,
+            isFirstService: false,
+        };
+        expect(serverNameOf(s)).toBe('Theo');
+        s = award(s, 0); // Theo (server 1) loses → Mara serves as server 2
+        expect(serverNameOf(s)).toBe('Mara');
+        expect(s.serverD.number).toBe(2);
+        s = award(s, 0); // Mara (server 2) loses → side-out to team 0
+        expect(s.serverD.team).toBe(0);
+        expect(s.serverD.number).toBe(1);
     });
 });
 
-describe('currentServeSide', () => {
-    it('uses serveSide directly in doubles', () => {
-        const s: GameState = { ...baseDoubles(), serveSide: 'L' };
-        expect(currentServeSide(s)).toBe('L');
+describe('award — win detection + event', () => {
+    it('flags the game over on the winning point', () => {
+        const start: MatchState = { ...freshState(singlesConfig()), score: [10, 5] };
+        const s = award(start, 0);
+        expect(s.score).toEqual([11, 5]);
+        expect(winnerOf(s.score, s.target, s.winByTwo)).toBe(0);
+        expect(s.event?.over).toBe(true);
     });
 
-    it('derives from score parity in singles', () => {
-        const evenScore: GameState = { ...baseSingles(), scores: { A: 4, B: 1 } };
-        const oddScore: GameState = { ...baseSingles(), scores: { A: 3, B: 1 } };
-        expect(currentServeSide(evenScore)).toBe('R');
-        expect(currentServeSide(oddScore)).toBe('L');
+    it('does not end the game at 11–10', () => {
+        const start: MatchState = { ...freshState(singlesConfig()), score: [10, 10] };
+        const s = award(start, 0);
+        expect(winnerOf(s.score, s.target, s.winByTwo)).toBeNull();
+        expect(s.event?.over).toBe(false);
     });
 });
 
-describe('sideToScreen', () => {
-    it("mirrors team A vs team B because they face each other", () => {
-        // A faces down: their right hand points west → screen-left.
-        // B faces up: their right hand points east → screen-right.
-        expect(sideToScreen('A', 'R')).toBe('sl');
-        expect(sideToScreen('A', 'L')).toBe('sr');
-        expect(sideToScreen('B', 'R')).toBe('sr');
-        expect(sideToScreen('B', 'L')).toBe('sl');
+describe('serverNameOf', () => {
+    it('reads the singles server name', () => {
+        expect(serverNameOf(freshState(singlesConfig()))).toBe('You');
+    });
+
+    it('reads the doubles server from serverPlayer', () => {
+        expect(serverNameOf(freshState(doublesConfig()))).toBe('You');
     });
 });

@@ -11,8 +11,8 @@ export function NotFound() {
             <p style={{ color: 'var(--clr-muted)', marginBottom: 16 }}>
                 That page doesn&rsquo;t exist.
             </p>
-            <Link to="/score" style={{ color: 'var(--clr-primary)', fontWeight: 700 }}>
-                Back to Score
+            <Link to="/" style={{ color: 'var(--clr-primary)', fontWeight: 700 }}>
+                Back to Dink
             </Link>
         </div>
     );
