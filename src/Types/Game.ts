@@ -2,8 +2,10 @@
 
 export type Mode = 'singles' | 'doubles';
 export type Target = 11 | 15 | 21;
-/** Accent theme key (colours live in Dink/theme.ts). */
+/** Accent theme key for the Court style (colours live in Dink/theme.ts). */
 export type AccentKey = 'green' | 'clay' | 'grape' | 'ocean';
+/** Accent key for the Paper style (earthy ink-on-cream tones). */
+export type PaperAccentKey = 'rust' | 'pine' | 'navy' | 'plum';
 /** Court-style / skin key (tokens live in Dink/skins.ts). */
 export type SkinId = 'court' | 'broadcast' | 'glass' | 'split' | 'paper';
 /** Animation speed preset. */

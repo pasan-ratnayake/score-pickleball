@@ -26,7 +26,7 @@ export function CompleteScreen({ rec, onRematch, onNew, onHome }: CompleteScreen
                 inset: 0,
                 display: 'flex',
                 flexDirection: 'column',
-                background: T.ink,
+                background: T.celebrate,
                 animation: 'screenIn .34s cubic-bezier(.25,1,.4,1) both',
                 overflow: 'hidden',
             }}
@@ -43,7 +43,7 @@ export function CompleteScreen({ rec, onRematch, onNew, onHome }: CompleteScreen
                     height: 460,
                     borderRadius: '50%',
                     pointerEvents: 'none',
-                    background: 'radial-gradient(circle, rgba(46,125,82,.55) 0%, transparent 65%)',
+                    background: `radial-gradient(circle, color-mix(in oklab, ${accent} 55%, transparent) 0%, transparent 65%)`,
                 }}
             />
             <div

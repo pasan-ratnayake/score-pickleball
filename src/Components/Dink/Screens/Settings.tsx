@@ -1,70 +1,41 @@
-/* Settings.tsx — accent theme, court style (5 skins), motion speed, defaults,
- * plus a link to the Rules reference. All live + persisted. */
+/* Settings.tsx — the Court Style IS the theme (re-skins the whole app). Below
+ * it: an accent picker for the themeable styles (Court / Paper) or a "built-in
+ * accent" note for the fixed ones (Neon / Glass / Split), then motion speed.
+ * Per-match rules (game-to, win-by-2) live on the New-match screen, not here. */
 
 import type { Settings } from '../../../Stores/useSettingsStore';
-import type { AccentKey, SkinId } from '../../../Types/Game';
+import type { AccentKey, PaperAccentKey, SkinId } from '../../../Types/Game';
 import { Paddle } from '../Atoms';
 import { SKIN_ORDER, SKINS } from '../skins';
-import { accent, accentInk, PALETTES, T } from '../theme';
-import { Card, chrome, Label, Screen, Segmented, Toggle, TopBar } from '../UiKit';
+import { accent, ACCENT_PICKERS, accentInk, FIXED_ACCENTS, T } from '../theme';
+import { Card, Label, Screen, Segmented, TopBar } from '../UiKit';
 
 interface SettingsScreenProps {
     settings: Settings;
     onChange: (patch: Partial<Settings>) => void;
     onBack: () => void;
-    onOpenRules: () => void;
 }
-export function SettingsScreen({ settings, onChange, onBack, onOpenRules }: SettingsScreenProps) {
+export function SettingsScreen({ settings, onChange, onBack }: SettingsScreenProps) {
     const set = (patch: Partial<Settings>) => onChange(patch);
+    const style = settings.courtStyle || 'court';
+    const palette = ACCENT_PICKERS[style]; // undefined for fixed-accent styles
+    const fixed = FIXED_ACCENTS[style];
+    const accentVal = style === 'paper' ? settings.paperAccent : settings.accent;
+    const pickAccent = (key: string) =>
+        style === 'paper' ? set({ paperAccent: key as PaperAccentKey }) : set({ accent: key as AccentKey });
 
     return (
         <Screen>
             <TopBar title="Settings" onBack={onBack} />
 
-            <Label>Accent</Label>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 22 }}>
-                {(Object.entries(PALETTES) as [AccentKey, (typeof PALETTES)[AccentKey]][]).map(([key, p]) => {
-                    const on = settings.accent === key;
-
-                    return (
-                        <button
-                            key={key}
-                            onClick={() => set({ accent: key })}
-                            aria-label={p.label}
-                            style={{
-                                flex: 1,
-                                border: 0,
-                                cursor: 'pointer',
-                                background: 'transparent',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: 6,
-                            }}
-                        >
-                            <span
-                                style={{
-                                    width: '100%',
-                                    height: 46,
-                                    borderRadius: 14,
-                                    background: p.c,
-                                    boxShadow: on ? `0 0 0 3px ${T.bg}, 0 0 0 5px ${p.c}` : '0 2px 0 rgba(20,24,26,.1)',
-                                    transition: 'box-shadow .15s ease',
-                                }}
-                            />
-                            <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: on ? T.ink : T.muted }}>
-                                {p.label}
-                            </span>
-                        </button>
-                    );
-                })}
+            <Label>Theme</Label>
+            <div style={{ fontFamily: T.body, fontSize: 12.5, color: T.muted, margin: '-4px 0 12px', fontWeight: 500 }}>
+                Sets the court and the whole app.
             </div>
-
-            <Label>Court style</Label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 22 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 24 }}>
                 {SKIN_ORDER.map((key: SkinId) => {
                     const sk = SKINS[key];
-                    const on = (settings.courtStyle || 'court') === key;
+                    const on = style === key;
 
                     return (
                         <button
@@ -89,7 +60,7 @@ export function SettingsScreen({ settings, onChange, onBack, onOpenRules }: Sett
                                     borderRadius: 12,
                                     background: sk.swatch,
                                     border: key === 'paper' ? '1px solid rgba(20,24,26,.14)' : '0',
-                                    boxShadow: on ? `0 0 0 3px ${T.bg}, 0 0 0 5px ${T.ink}` : '0 2px 0 rgba(20,24,26,.1)',
+                                    boxShadow: on ? `0 0 0 3px ${T.bg}, 0 0 0 5px ${accent}` : '0 2px 0 rgba(20,24,26,.1)',
                                     transition: 'box-shadow .15s ease',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -107,6 +78,78 @@ export function SettingsScreen({ settings, onChange, onBack, onOpenRules }: Sett
                     );
                 })}
             </div>
+
+            <Label>Accent</Label>
+            {palette ? (
+                <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+                    {Object.entries(palette).map(([key, p]) => {
+                        const on = (accentVal || Object.keys(palette)[0]) === key;
+
+                        return (
+                            <button
+                                key={key}
+                                onClick={() => pickAccent(key)}
+                                aria-label={p.label}
+                                style={{
+                                    flex: 1,
+                                    border: 0,
+                                    cursor: 'pointer',
+                                    background: 'transparent',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        width: '100%',
+                                        height: 46,
+                                        borderRadius: 14,
+                                        background: p.c,
+                                        boxShadow: on
+                                            ? `0 0 0 3px ${T.bg}, 0 0 0 5px ${p.c}`
+                                            : '0 2px 0 rgba(20,24,26,.1)',
+                                        transition: 'box-shadow .15s ease',
+                                    }}
+                                />
+                                <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: on ? T.ink : T.muted }}>
+                                    {p.label}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 11,
+                        marginBottom: 24,
+                        padding: '12px 14px',
+                        background: T.soft,
+                        borderRadius: 14,
+                        border: `1px solid ${T.line}`,
+                    }}
+                >
+                    <span
+                        style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 9,
+                            background: fixed?.c,
+                            flexShrink: 0,
+                            border: '1px solid rgba(255,255,255,.25)',
+                        }}
+                    />
+                    <span style={{ fontFamily: T.body, fontSize: 13, fontWeight: 600, color: T.muted }}>
+                        The {SKINS[style].label} theme uses a built-in accent.
+                    </span>
+                </div>
+            )}
+
+            <Label>Animation speed</Label>
             <Segmented
                 value={settings.speed}
                 onChange={(v) => set({ speed: v })}
@@ -117,64 +160,7 @@ export function SettingsScreen({ settings, onChange, onBack, onOpenRules }: Sett
                 ]}
             />
 
-            <Label style={{ marginTop: 22 }}>Default game to</Label>
-            <Segmented
-                value={settings.target}
-                onChange={(v) => set({ target: v })}
-                options={[
-                    { value: 11, label: '11' },
-                    { value: 15, label: '15' },
-                    { value: 21, label: '21' },
-                ]}
-            />
-
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginTop: 18,
-                    padding: '2px',
-                }}
-            >
-                <div style={{ fontFamily: T.display, fontWeight: 800, fontSize: 14.5, color: T.ink }}>
-                    Win by 2 by default
-                </div>
-                <Toggle on={settings.winByTwo} onChange={(v) => set({ winByTwo: v })} />
-            </div>
-
-            <Card
-                onClick={onOpenRules}
-                style={{ marginTop: 18, padding: 16, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}
-            >
-                <div
-                    style={{
-                        width: 38,
-                        height: 38,
-                        borderRadius: 11,
-                        background: T.soft,
-                        flexShrink: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: accent,
-                        fontSize: 18,
-                    }}
-                >
-                    📖
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: T.display, fontWeight: 800, fontSize: 14, color: T.ink }}>
-                        Rules &amp; scoring
-                    </div>
-                    <div style={{ fontFamily: T.body, fontSize: 12.5, color: T.muted }}>
-                        How serving, side-outs and the kitchen work.
-                    </div>
-                </div>
-                <span style={{ ...chrome(T.muted), width: 'auto', height: 'auto', fontSize: 22 }}>›</span>
-            </Card>
-
-            <Card style={{ marginTop: 12, padding: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Card style={{ marginTop: 26, padding: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div
                     style={{
                         width: 38,

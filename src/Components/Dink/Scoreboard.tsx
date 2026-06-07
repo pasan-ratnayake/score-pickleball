@@ -34,6 +34,7 @@ import {
 } from './anim';
 import { EditableName,Paddle  } from './Atoms';
 import { ConfirmDialog, WinOverlay } from './Overlays';
+import { RulesSheet } from './Rules';
 import type { Skin } from './skins';
 import { Icon } from './UiKit';
 
@@ -83,6 +84,7 @@ export function Scoreboard({ m, skin, onExit, onNewMatch, onFinish, flipMs = 460
     }, [evSeq]);
 
     const [confirm, setConfirm] = useState<'home' | 'new' | null>(null);
+    const [rules, setRules] = useState(false);
     // Only guard a live match with progress — nothing to lose at 0–0 or once over.
     const dirty = m.pointsPlayed > 0 && !m.isOver;
     const askExit = () => (dirty ? setConfirm('home') : onExit());
@@ -129,6 +131,14 @@ export function Scoreboard({ m, skin, onExit, onNewMatch, onFinish, flipMs = 460
             >
                 <button onClick={askExit} aria-label="Home" className="dink-btn" style={hdrBtn(sk, false, false, true)}>
                     {Icon.home({ s: 17, c: sk.header.plainInk })}
+                </button>
+                <button
+                    onClick={() => setRules(true)}
+                    aria-label="How to play"
+                    className="dink-btn"
+                    style={hdrBtn(sk, false, false, true)}
+                >
+                    {Icon.help({ s: 17, c: sk.header.plainInk })}
                 </button>
                 <span
                     style={{
@@ -325,6 +335,8 @@ export function Scoreboard({ m, skin, onExit, onNewMatch, onFinish, flipMs = 460
                     }}
                 />
             )}
+
+            {rules && <RulesSheet onClose={() => setRules(false)} />}
         </div>
     );
 }

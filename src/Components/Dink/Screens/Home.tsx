@@ -10,9 +10,10 @@ interface HomeScreenProps {
     history: MatchRecord[];
     onNew: () => void;
     onHistory: () => void;
+    onRules: () => void;
     onOpenSettings: () => void;
 }
-export function HomeScreen({ history, onNew, onHistory, onOpenSettings }: HomeScreenProps) {
+export function HomeScreen({ history, onNew, onHistory, onRules, onOpenSettings }: HomeScreenProps) {
     const recent = history.slice(0, 3);
     const played = history.length;
 
@@ -50,7 +51,7 @@ export function HomeScreen({ history, onNew, onHistory, onOpenSettings }: HomeSc
                 </button>
             </div>
 
-            <div style={{ marginTop: 26 }}>
+            <div className="dink-home-hero" style={{ marginTop: 26 }}>
                 <div
                     style={{
                         fontFamily: T.display,
@@ -71,9 +72,12 @@ export function HomeScreen({ history, onNew, onHistory, onOpenSettings }: HomeSc
                 </div>
             </div>
 
-            <div style={{ marginTop: 22 }}>
+            <div style={{ marginTop: 22, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <Btn onClick={onNew} style={{ fontSize: 17, padding: '18px 22px' }}>
                     {Icon.plus({ s: 20, c: accentInk })} New match
+                </Btn>
+                <Btn kind="ghost" onClick={onRules} style={{ fontSize: 15, padding: '14px 22px', whiteSpace: 'nowrap' }}>
+                    {Icon.book({ s: 18, c: T.ink })} How to play
                 </Btn>
             </div>
 

@@ -342,7 +342,7 @@ export const SKINS: Record<SkinId, Skin> = {
             size: 46, sizeD: 44, faceFont: SERIF, faceWeight: 500, faceSize: 21,
             faceBg: '#FBF6EA', faceColor: '#2A2520', faceBorder: '2.5px solid #2A2520', faceShadow: '0 2px 0 rgba(74,64,52,.22)',
             highlightServ: false, faceBgServ: '#FBF6EA', faceColorServ: '#2A2520', faceBorderServ: '2.5px solid #2A2520', faceShadowServ: '0 2px 0 rgba(74,64,52,.22)',
-            tokenBg: '#9C4A2A', tokenBorder: '2.5px solid #FBF6EA', paddle: '#FBF6EA', paddleInk: '#9C4A2A',
+            tokenBg: 'var(--accent, #9C4A2A)', tokenBorder: '2.5px solid #FBF6EA', paddle: '#FBF6EA', paddleInk: 'var(--accent, #9C4A2A)',
             nameBg: 'rgba(251,246,234,.9)', nameColor: '#2A2520', nameFont: INTER, nameWeight: 700,
         },
         pill: {
@@ -351,8 +351,8 @@ export const SKINS: Record<SkinId, Skin> = {
         },
         net: { bg: 'repeating-linear-gradient(90deg, #2A2520 0 5px, transparent 5px 9px)', height: 3, opacity: 0.85, inset: 0 },
         tooltip: { bg: '#2A2520', fg: '#F1EADB', weight: 500 },
-        fx: { point: '#9C4A2A', ripple: 'rgba(74,64,52,.32)' },
-        accent: '#9C4A2A', accentInk: '#FBF6EA', overlayInk: '#9C4A2A',
+        fx: { point: 'var(--accent, #9C4A2A)', ripple: 'rgba(74,64,52,.32)' },
+        accent: 'var(--accent, #9C4A2A)', accentInk: 'var(--accent-ink, #FBF6EA)', overlayInk: 'var(--accent, #9C4A2A)',
         padding: '18px 0',
     },
 };

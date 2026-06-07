@@ -1,10 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import type { AccentKey, DoublesNames, Mode, Pair, SkinId, Speed, Target } from '../Types/Game';
+import type {
+    AccentKey,
+    DoublesNames,
+    Mode,
+    Pair,
+    PaperAccentKey,
+    SkinId,
+    Speed,
+    Target,
+} from '../Types/Game';
 
 export interface Settings {
     accent: AccentKey;
+    paperAccent: PaperAccentKey;
     courtStyle: SkinId;
     speed: Speed;
     target: Target;
@@ -20,6 +30,7 @@ interface SettingsStore extends Settings {
 
 const DEFAULTS: Settings = {
     accent: 'green',
+    paperAccent: 'rust',
     courtStyle: 'court',
     speed: 'default',
     target: 11,

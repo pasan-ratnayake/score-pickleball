@@ -1,10 +1,11 @@
 /* UiKit.tsx — shared Dink UI: icons, buttons, controls, screen scaffold, frame.
- * Court-View language: sage canvas, white cards, ink text, themeable accent.
- * (The fake phone frame + status bar from the prototype are dropped; the app is
- * a responsive, mobile-first column centred on larger screens.) */
+ * Court-View language, themeable per Court Style. The fake phone frame + status
+ * bar from the prototype are dropped; the app is responsive (mobile full-bleed,
+ * desktop = brand rail + app surface). */
 
 import type { ButtonHTMLAttributes, CSSProperties, ReactElement, ReactNode } from 'react';
 
+import { Paddle } from './Atoms';
 import { accent, accentInk, T } from './theme';
 
 /* ─── Icons (simple, geometric) ───────────────────────────────────────── */
@@ -42,6 +43,30 @@ export const Icon = {
     bolt: ({ s = 18, c = 'currentColor' }: IconProps = {}): ReactElement => (
         <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
             <path d="M13 3L5 13h6l-1 8 8-10h-6l1-8z" fill={c} />
+        </svg>
+    ),
+    help: ({ s = 18, c = 'currentColor' }: IconProps = {}): ReactElement => (
+        <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke={c} strokeWidth="1.8" />
+            <path
+                d="M9.3 9.3a2.7 2.7 0 1 1 3.4 2.6c-.7.2-1.1.7-1.1 1.4v.5"
+                stroke={c}
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <circle cx="11.6" cy="16.8" r="1.05" fill={c} />
+        </svg>
+    ),
+    book: ({ s = 18, c = 'currentColor' }: IconProps = {}): ReactElement => (
+        <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+            <path
+                d="M12 6.5C10.5 5.3 8.4 5 4.8 5v12c3.6 0 5.7.3 7.2 1.5M12 6.5C13.5 5.3 15.6 5 19.2 5v12c-3.6 0-5.7.3-7.2 1.5M12 6.5v12"
+                stroke={c}
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
         </svg>
     ),
 };
@@ -189,6 +214,8 @@ export function Card({ children, style, onClick }: CardProps) {
                 background: T.card,
                 borderRadius: 20,
                 border: `1px solid ${T.line}`,
+                backdropFilter: 'var(--app-card-blur, none)',
+                WebkitBackdropFilter: 'var(--app-card-blur, none)',
                 boxShadow: '0 2px 0 rgba(20,24,26,.04)',
                 ...style,
             }}
@@ -305,30 +332,83 @@ interface AppFrameProps {
     children: ReactNode;
     screenBg?: string;
 }
+/**
+ * Responsive shell. Mobile: the app fills the viewport (the mockup). Tablet: a
+ * centered elevated card. Desktop: a themed brand rail beside the app surface,
+ * on an accent-glow backdrop. The layout/breakpoints live in `dink.css`; the
+ * stage background is the live screen colour (passed in). The rail is decorative
+ * and only shown on desktop (hidden via CSS otherwise).
+ */
 export function AppFrame({ children, screenBg = T.bg }: AppFrameProps) {
     return (
-        <div
-            style={{
-                position: 'fixed',
-                inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: '#DBDDD7',
-            }}
-        >
-            <div
-                style={{
-                    position: 'relative',
-                    width: 'min(100vw, 430px)',
-                    height: '100dvh',
-                    maxHeight: 'min(100dvh, 932px)',
-                    overflow: 'hidden',
-                    background: screenBg,
-                    boxShadow: '0 10px 50px rgba(0,0,0,.18)',
-                }}
-            >
-                {children}
+        <div className="dink-frame">
+            <div className="dink-shell">
+                <aside className="dink-rail" aria-hidden="true">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                        <div
+                            style={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: 13,
+                                background: accent,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Paddle size={18} color={accentInk} />
+                        </div>
+                        <span
+                            style={{
+                                fontFamily: T.display,
+                                fontWeight: 900,
+                                fontSize: 26,
+                                letterSpacing: '-0.02em',
+                                color: T.ink,
+                            }}
+                        >
+                            Dink
+                        </span>
+                    </div>
+
+                    <div>
+                        <div
+                            style={{
+                                fontFamily: T.display,
+                                fontWeight: 900,
+                                fontSize: 40,
+                                lineHeight: 1.04,
+                                letterSpacing: '-0.025em',
+                                color: T.ink,
+                                textWrap: 'balance',
+                            }}
+                        >
+                            Keep score,
+                            <br />
+                            not the arguments.
+                        </div>
+                        <div
+                            style={{
+                                fontFamily: T.body,
+                                fontSize: 15,
+                                color: T.muted,
+                                marginTop: 14,
+                                fontWeight: 500,
+                                maxWidth: 260,
+                            }}
+                        >
+                            Tap the court to score. Dink tracks serving, side-outs and the win — across
+                            singles and doubles.
+                        </div>
+                    </div>
+
+                    <div style={{ fontFamily: T.body, fontSize: 12.5, color: T.muted, fontWeight: 600, opacity: 0.8 }}>
+                        Dink · v1 — a friendlier way to keep score.
+                    </div>
+                </aside>
+                <div className="dink-stage" style={{ background: screenBg }}>
+                    {children}
+                </div>
             </div>
         </div>
     );

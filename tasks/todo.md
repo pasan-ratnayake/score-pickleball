@@ -35,6 +35,29 @@ Verified end-to-end in the browser: singles + doubles scoring/side-outs/undo, 0-
 
 Note: `react-refresh/only-export-components` warnings remain on `UiKit.tsx` and `anim.tsx` (cohesive modules that export hooks/helpers alongside components) — HMR-only, non-blocking.
 
+## Active: "Dink" v2 — theme-by-style + in-app rules + responsive desktop
+
+New design bundle (`Otgdv3Bjyuo5iI-_XDqVLg`) adds a theming overhaul + in-app rules. Plus user asks for a real responsive desktop layout (mobile = mockup, desktop = appropriate, not phone-limited).
+
+### Plan
+
+1. [x] Theme-by-style: `APP_THEMES` per skin re-skins the whole app via `--app-*` CSS vars; `T` tokens are var-backed (+ `celebrate`).
+2. [x] Accent model: Court→PALETTES, Paper→PAPER_PALETTES (rust/pine/navy/plum), Neon/Glass/Split→FIXED_ACCENTS; `resolveAccent`. Added `paperAccent` setting.
+3. [x] Settings restructure: Theme picker → Accent (palette or "built-in" note) → Animation speed. Removed game-to + win-by-2 + old Rules link.
+4. [x] In-app Rules: `Rules.tsx` (RulesScreen + RulesSheet + RulesBody/ServeDiagram). Home "How to play" button; Play header `?` sheet.
+5. [x] Skins: paper accent follows `--accent`. Card backdrop-blur var. New Icon.help/book. Complete uses `celebrate` + accent glow.
+6. [x] Removed superseded standalone `/rules` page + `Components/Rules/*` + `useThemeStore`/`useApplyTheme`.
+7. [x] Responsive desktop: mobile full-bleed (mockup); ≥768px centered elevated card; ≥1024px themed brand rail + app surface on accent-glow backdrop (Home hero hidden on desktop to avoid dupe).
+8. [x] Verified: typecheck, lint 0 errors, 14/14 tests, build OK; browser flow across Court/Neon/Glass/Paper themes, rules screen + in-game sheet, mobile + desktop (screenshots captured).
+
+### Review (v2)
+
+Ported the design2 bundle (`Otgdv3Bjyuo5iI-_XDqVLg`): the **Court Style now themes the whole app**, not just the board. `theme.ts` gained `APP_THEMES` (per-style shell tokens), `PAPER_PALETTES`, `FIXED_ACCENTS`, and `resolveAccent`; `T` is CSS-var-backed (`--app-*`) and `DinkApp` writes the chosen style's tokens + resolved accent to the root each time the style/accent changes. Settings was restructured (Theme → Accent picker / built-in-accent note → Animation speed) and the game-to / win-by-2 defaults removed (still set per match on Setup). Added the in-app **"How to play"** (`Rules.tsx`): a full `RulesScreen` from Home and a themed `RulesSheet` from the play header `?`. The old standalone `/rules` page + its light/dark theme system (`useThemeStore`/`useApplyTheme`/`Components/Rules`) were removed as superseded.
+
+For **responsive desktop** (user ask, beyond the mockup): `AppFrame` + `dink.css` give mobile a full-bleed mockup, tablet a centered elevated card, and desktop a themed **brand rail beside the app surface** on an accent-glow backdrop — all reskinning per theme. The existing screens are reused unchanged in the app surface; Home's hero is hidden on desktop since the rail carries it.
+
+Verified in-browser (screenshots now work): theme-by-style across Court/Neon/Glass/Paper (incl. the rail), accent pickers vs. built-in note, the rules screen + in-game sheet, and mobile↔desktop layouts. Engine untouched (14/14). HMR-only `react-refresh` warnings remain on cohesive kit/anim modules.
+
 ## Recently completed
 
 - **HTML → React port** (branch `claude/wizardly-wing-989c14`): single-file `legacy/index.html` ported to a Vite + React 19 + TS + Tailwind v4 app. Pluggable layout structure under `src/Components/Score/Layouts/`. Pure scoring engine + Zustand stores + snapshot undo. react-query/ky provisioned for a future backend. Verified: typecheck, lint, 13/13 unit tests, browser smoke test (setup → start game → record point → undo → rules page → theme toggle, no console errors).
