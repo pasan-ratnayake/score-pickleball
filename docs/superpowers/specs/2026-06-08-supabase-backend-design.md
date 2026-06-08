@@ -114,12 +114,15 @@ RLS explicitly above.)
   app renders a brief splash until the session is ready (required-auth, but invisible in the
   common case).
 - **Upgrade ("Save your data", in Settings):**
-  - Magic link: `signInWithOtp({ email, options: { emailRedirectTo } })`.
+  - Magic link: `updateUser({ email }, { emailRedirectTo })` — converts the anonymous user to
+    permanent, keeping the same `user_id`; sends a confirmation email the user must click.
+    (NOT `signInWithOtp`, which would sign into a *separate* account and orphan the anon data.)
   - Google: `linkIdentity({ provider: 'google' })`.
   - Linking keeps the **same `user_id`**, so all existing data carries over with no migration.
 - **Link-collision (v1):** if the email/Google identity already belongs to another account,
-  Supabase errors; we show "already registered — signing you in" and sign into that account.
-  The current device's anonymous data is left orphaned (no cross-account merge).
+  Supabase errors. We surface "that email may already be in use — try another"; the user stays
+  on their current anonymous session (no silent account switch, no cross-account merge). Their
+  anon data is only ever orphaned if they later sign into the other account directly.
 - **Redirects:** Supabase Auth needs Site URL + redirect URLs:
   `https://dink.hawkz-pl.workers.dev` (prod) and `http://localhost:5173` (dev).
   Client uses `detectSessionInUrl: true` to complete magic-link/OAuth callbacks.
