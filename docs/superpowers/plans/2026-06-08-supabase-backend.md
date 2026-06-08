@@ -1085,19 +1085,22 @@
 
 > The screen stays presentational. `DinkApp` (Task 15) passes `loading`/`error` from `useMatches`. Add a loading state and an error state alongside the existing empty state.
 
-- [ ] Extend the props interface:
+- [ ] Extend the props interface — add `loading`/`error`, **remove** the now-unused `onClear` (the Clear button is being removed; there is no bulk-delete in v1):
   ```ts
   interface HistoryScreenProps {
       history: MatchRecord[];
       loading?: boolean;
       error?: boolean;
       onBack: () => void;
-      onClear: () => void;
   }
   ```
-- [ ] Update the signature to destructure the new props:
+- [ ] Update the signature to destructure the new props (no `onClear`):
   ```ts
-  export function HistoryScreen({ history, loading, error, onBack, onClear }: HistoryScreenProps) {
+  export function HistoryScreen({ history, loading, error, onBack }: HistoryScreenProps) {
+  ```
+- [ ] Remove the Clear button entirely — replace the `<TopBar .../>` (lines 16-37) with a title-only bar:
+  ```tsx
+              <TopBar title="History" onBack={onBack} />
   ```
 - [ ] Insert loading + error branches before the `history.length === 0` check (replace the opening of the conditional). The full conditional block becomes:
   ```tsx
@@ -1175,7 +1178,7 @@
       const addMatchMut = useAddMatch();
       const rememberMut = useRememberPlayers();
   ```
-  (delete the four `useHistoryStore(...)` lines and the `clearMatches`/`seedRoster` references they introduced.)
+  (delete the four `useHistoryStore(...)` lines — including the `clearMatches` selector on line 36 — and the `seedRoster` references they introduced.)
 - [ ] Delete the one-time `seedRoster` effect entirely (lines 65-69) — there is no local roster to backfill anymore.
 - [ ] Update `handleStart` to remember players via the mutation (was implicit in the old store). After `startMatch({...})`, add the remember call:
   ```ts
@@ -1203,7 +1206,7 @@
           setScreen('complete');
       };
   ```
-- [ ] Update the `history` screen JSX to pass query states and drop the now-removed `clearMatches`. The Clear action becomes a no-op stub for v1 (no bulk-delete endpoint in scope — wire to an empty handler so the button hides when empty; remove the `onClear` prop pass if you prefer, but keep the prop required). Use:
+- [ ] Update the `history` screen JSX to pass query states; the `onClear` prop is gone (Clear button removed in Task 14 — no bulk-delete in v1). Use:
   ```tsx
       else if (screen === 'history')
           body = (
@@ -1212,11 +1215,10 @@
                   loading={matchesQuery.isLoading}
                   error={matchesQuery.isError}
                   onBack={() => setScreen('home')}
-                  onClear={() => {}}
               />
           );
   ```
-  > Note: bulk "Clear history" is out of scope for v1 (no delete endpoint in the spec). The button still renders when there are matches; `onClear` is a no-op. If a delete is wanted later, add a `deleteAllMatches()` service + mutation. Leave a `// TODO(v2): wire Clear to a delete mutation` comment above this block.
+  > Note: there is no bulk "Clear history" in v1 (no delete endpoint, and the button has been removed in Task 14). If a delete is wanted later, add a `deleteAllMatches()` service + mutation and reintroduce the action.
 - [ ] Add the auth gate before the final `return`. Replace the final return with a status switch that shows a splash while loading and a retry screen on error (spec §5/§8):
   ```tsx
       if (status === 'loading') {
@@ -1548,5 +1550,5 @@
 - **§8 (error handling):** Task 14 (history loading/error), Task 15 (splash/retry gate). ✓
 - **§9 (testing):** Tasks 5-7 (mapper tests), Task 19 (full suite + manual checklist). ✓
 - **§10 (manual Supabase setup):** Task 2 manual note. ✓
-- **§11/§12 (limitations / out of scope):** honoured — no merge, no offline queue, Clear-history left as a v2 TODO in Task 15. ✓
+- **§11/§12 (limitations / out of scope):** honoured — no merge, no offline queue, Clear-history button removed in Task 14 (no bulk delete in v1). ✓
 - **§13 (file-level change summary):** mirrored in File Structure + Tasks. ✓
